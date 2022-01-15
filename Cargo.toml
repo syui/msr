@@ -8,4 +8,11 @@ edition = "2021"
 seahorse = "1.1.2"
 dotenv = "0.15"
 mammut = "0.13.0"
-
+serde_derive = "1.0"
+serde_json = "1.0"
+toml = "*"
+serde = "*"
+envy = "*"
+config = { git = "https://github.com/mehcode/config-rs", branch = "master" }
+lazy_static = "1.0"
+once_cell = "*"

@@ -1,19 +1,73 @@
 use std::env;
+pub mod data;
+use data::Data as Datas;
+use mammut::{Data, Mastodon, StatusBuilder};
+use seahorse::{App, Command, Context};
 
-use mammut::{Data, Mastodon};
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    let app = App::new(env!("CARGO_PKG_NAME"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .version(env!("CARGO_PKG_VERSION"))
+        .usage("cli_tool [command] [x] [y]")
+        .command(
+            Command::new("s")
+            .usage("msr s")
+            .action(s),
+            )
+        .command(
+            Command::new("p")
+            .usage("msr p {}")
+            .action(p),
+            )
+        .command(
+            Command::new("t")
+            .usage("msr t")
+            .action(t),
+            )
+        ;
+    app.run(args);
+}
 
-fn main() -> mammut::Result<()> {
-
+fn token() -> Mastodon {
+    let data = Datas::new().unwrap();
     let data = Data {
-        base: env::var("BASE").unwrap().into(),
-        client_id: env::var("CLIENT_ID").unwrap().into(),
-        client_secret: env::var("CLIENT_SECRET").unwrap().into(),
-        redirect: env::var("REDIRECT").unwrap().into(),
-        token: env::var("TOKEN").unwrap().into(),
+        base: data.base,
+        token: data.token,
+        client_id: data.client_id,
+        client_secret: data.client_secret,
+        redirect: data.redirect,
     };
+    let t = Mastodon::from_data(data);
+    return t;
+}
 
-    let mastodon = Mastodon::from_data(data);
-    println!("{:?}", mastodon.get_home_timeline()?.initial_items);
+fn s(_c: &Context) {
+    let mastodon = token();
+    let tl = mastodon.verify_credentials();
+    println!("{:#?}", tl);
+}
+
+fn timeline() -> mammut::Result<()> {
+    let mastodon = token();
+    let length = &mastodon.get_home_timeline()?.initial_items.len();
+    for n in 0..*length {
+        let user = &mastodon.get_home_timeline()?.initial_items[n].account.username;
+        let body = &mastodon.get_home_timeline()?.initial_items[n].content;
+        println!("{} {:?}", user, body);
+    }
     Ok(())
 }
 
+fn t(_c: &Context) {
+    let t = timeline().unwrap();
+    println!("{:#?}", t);
+}
+
+fn p(c: &Context) {
+    let mastodon = token();
+    let message = c.args[0].to_string();
+    let status_b = StatusBuilder::new(format!("{}", message));
+    let post = mastodon.new_status(status_b);
+    println!("{:?}", post);
+}
