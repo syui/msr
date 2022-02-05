@@ -1,8 +1,11 @@
 mastodon cli client.
 
+> ~/.config/msr/config.toml
+
 ```sh
-$ cp config.toml.example config.toml
-$ vim config.toml
+$ mkdir -p ~/.config/msr
+$ cp config.toml.example ~/.config/msr/config.toml
+$ vim ~/.config/msr/config.toml
 
 $ cargo run
 

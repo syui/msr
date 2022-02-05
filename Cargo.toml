@@ -13,4 +13,4 @@ serde_derive = "1.0"
 serde_json = "1.0"
 serde = "*"
 config = { git = "https://github.com/mehcode/config-rs", branch = "master" }
-dirs = "*"
+shellexpand = "*"
