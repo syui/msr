@@ -8,24 +8,30 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let app = App::new(env!("CARGO_PKG_NAME"))
         .author(env!("CARGO_PKG_AUTHORS"))
+        .description(env!("CARGO_PKG_DESCRIPTION"))
         .version(env!("CARGO_PKG_VERSION"))
-        .usage("cli_tool [command] [x] [y]")
+        .usage("msr [option] [x]")
         .command(
-            Command::new("s")
-            .usage("msr s")
+            Command::new("status")
+            .usage("msr s status")
+            .description("status")
+            .alias("s")
             .action(s),
             )
         .command(
-            Command::new("p")
+            Command::new("post")
             .usage("msr p {}")
+            .description("post message")
+            .alias("p")
             .action(p),
             )
         .command(
-            Command::new("t")
+            Command::new("tl")
             .usage("msr t")
+            .description("timeline")
+            .alias("t")
             .action(t),
-            )
-        ;
+            );
     app.run(args);
 }
 
