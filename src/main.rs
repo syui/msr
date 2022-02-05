@@ -31,6 +31,13 @@ fn main() {
             .description("timeline")
             .alias("t")
             .action(t),
+            )
+        .command(
+            Command::new("delete")
+            .usage("msr d")
+            .description("delete latest post")
+            .alias("d")
+            .action(d),
             );
     app.run(args);
 }
@@ -65,6 +72,7 @@ fn timeline() -> mammut::Result<()> {
     Ok(())
 }
 
+
 fn t(_c: &Context) {
     let t = timeline().unwrap();
     println!("{:#?}", t);
@@ -76,4 +84,20 @@ fn p(c: &Context) {
     let status_b = StatusBuilder::new(format!("{}", message));
     let post = mastodon.new_status(status_b);
     println!("{:?}", post);
+}
+
+#[allow(unused_must_use)]
+fn delete() -> mammut::Result<()> {
+    let mastodon = token();
+    let user = &mastodon.get_home_timeline()?.initial_items[0].account.username;
+    let body = &mastodon.get_home_timeline()?.initial_items[0].content;
+    let id = &mastodon.get_home_timeline()?.initial_items[0].id;
+    println!("delete -> {} {:?}", user, body);
+    mastodon.delete_status(id);
+    Ok(())
+}
+
+fn d(_c: &Context) {
+    let t = delete().unwrap();
+    println!("{:#?}", t);
 }
