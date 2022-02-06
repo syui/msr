@@ -15,3 +15,11 @@ $ ./target/debug/msr s
 mastodon api : https://github.com/XAMPPRocky/Mammut
 
 rust cli : https://github.com/ksk001100/seahorse
+
+### example
+
+```sh
+$ msr p "test post"
+
+$ msr m ./test.png
+```
