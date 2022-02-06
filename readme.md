@@ -12,6 +12,6 @@ $ cargo run
 $ ./target/debug/msr s
 ```
 
-mastodon api lib : https://docs.rs/mammut/latest/mammut
+mastodon api : https://github.com/XAMPPRocky/Mammut
 
 rust cli : https://github.com/ksk001100/seahorse
