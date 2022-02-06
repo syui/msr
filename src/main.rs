@@ -3,6 +3,7 @@ pub mod data;
 use data::Data as Datas;
 use mammut::{Data, Mastodon, StatusBuilder};
 use seahorse::{App, Command, Context};
+//use seahorse::{Flag, FlagType};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -13,7 +14,7 @@ fn main() {
         .usage("msr [option] [x]")
         .command(
             Command::new("status")
-            .usage("msr s status")
+            .usage("msr s")
             .description("status")
             .alias("s")
             .action(s),
@@ -33,12 +34,20 @@ fn main() {
             .action(t),
             )
         .command(
+            Command::new("notify")
+            .usage("msr n")
+            .description("notification")
+            .alias("n")
+            .action(n),
+            )
+        .command(
             Command::new("delete")
             .usage("msr d")
             .description("delete latest post")
             .alias("d")
             .action(d),
-            );
+            )
+        .command(c_media_upload());
     app.run(args);
 }
 
@@ -72,7 +81,6 @@ fn timeline() -> mammut::Result<()> {
     Ok(())
 }
 
-
 fn t(_c: &Context) {
     let t = timeline().unwrap();
     println!("{:#?}", t);
@@ -101,3 +109,37 @@ fn d(_c: &Context) {
     let t = delete().unwrap();
     println!("{:#?}", t);
 }
+
+fn c_media_upload() -> Command {
+    Command::new("media")
+        .usage("msr media [file...]")
+        .action(media)
+        .alias("m")
+        .description("media upload")
+        //.flag(
+        //    Flag::new("post", FlagType::String)
+        //    .description("post message")
+        //    .alias("p"),
+        //    )
+}
+
+#[allow(unused_must_use)]
+fn media(c: &Context) {
+    let mastodon = token();
+    let file = c.args[0].to_string();
+    mastodon.media(file.into());
+}
+
+#[allow(unused_must_use)]
+fn notify() -> mammut::Result<()> {
+    let mastodon = token();
+    let t = &mastodon.notifications()?.initial_items;
+    println!("{:#?}", t);
+    Ok(())
+}
+
+fn n(_c: &Context) {
+    let t = notify().unwrap();
+    println!("{:#?}", t);
+}
+
