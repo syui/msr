@@ -127,6 +127,7 @@ fn media(c: &Context) {
     let mastodon = token();
     let file = c.args[0].to_string();
     if let Ok(text) = c.string_flag("text") {
+        // test command
         let s = Cow::Owned(String::from(text));
         let t = mastodon.media(
             MediaBuilder::new(file.into())
@@ -136,7 +137,21 @@ fn media(c: &Context) {
         println!("{:?}", t);
     }  else {
         let t = mastodon.media(file.into());
-        println!("{:?}", t);
+        let id = t.as_ref().unwrap();
+        println!("{:?}", id);
+        let mid = Some(vec![id.id.to_string()]);
+        let status = "#media".to_string();
+        println!("{:?}", mid);
+        let status_b = StatusBuilder {
+            status: status,
+            in_reply_to_id: None,
+            media_ids: mid,
+            sensitive: None,
+            spoiler_text: None,
+            visibility: None,
+        };
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
     }
 }
 
