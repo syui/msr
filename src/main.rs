@@ -1,9 +1,9 @@
 use std::env;
+use std::borrow::Cow;
 pub mod data;
 use data::Data as Datas;
-use mammut::{Data, Mastodon, StatusBuilder};
-use seahorse::{App, Command, Context};
-//use seahorse::{Flag, FlagType};
+use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
+use seahorse::{App, Command, Context, Flag, FlagType};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -27,7 +27,7 @@ fn main() {
             .action(p),
             )
         .command(
-            Command::new("tl")
+            Command::new("timeline")
             .usage("msr t")
             .description("timeline")
             .alias("t")
@@ -116,18 +116,28 @@ fn c_media_upload() -> Command {
         .action(media)
         .alias("m")
         .description("media upload")
-        //.flag(
-        //    Flag::new("post", FlagType::String)
-        //    .description("post message")
-        //    .alias("p"),
-        //    )
+        .flag(
+            Flag::new("text", FlagType::String)
+            .description("post flag(ex. msr m ./test.png  -p text)")
+            .alias("p"),
+            )
 }
 
-#[allow(unused_must_use)]
 fn media(c: &Context) {
     let mastodon = token();
     let file = c.args[0].to_string();
-    mastodon.media(file.into());
+    if let Ok(text) = c.string_flag("text") {
+        let s = Cow::Owned(String::from(text));
+        let t = mastodon.media(
+            MediaBuilder::new(file.into())
+            .description(s)
+            .focus(200.0, 200.0)
+            );
+        println!("{:?}", t);
+    }  else {
+        let t = mastodon.media(file.into());
+        println!("{:?}", t);
+    }
 }
 
 #[allow(unused_must_use)]
