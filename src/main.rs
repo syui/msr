@@ -1,5 +1,6 @@
 use std::env;
 use std::borrow::Cow;
+use std::fs;
 pub mod data;
 use data::Data as Datas;
 use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
@@ -46,6 +47,13 @@ fn main() {
             .description("delete latest post")
             .alias("d")
             .action(d),
+            )
+        .command(
+            Command::new("accont")
+            .usage("msr a {}")
+            .description("account change, ex : $ msr a ~/test.toml, $ msr a -d(setting.toml)")
+            .alias("a")
+            .action(a),
             )
         .command(c_media_upload());
     app.run(args);
@@ -168,3 +176,18 @@ fn n(_c: &Context) {
     println!("{:#?}", t);
 }
 
+#[allow(unused_must_use)]
+fn a(c: &Context)  {
+    let i = c.args[0].to_string();
+    let o = shellexpand::tilde("~") + "/.config/msr/config.toml";
+    let o = o.to_string();
+    if &i == "-d" {
+        let i = shellexpand::tilde("~") + "/.config/msr/setting.toml";
+        let i = i.to_string();
+        println!("{:#?} -> {:#?}", i, o);
+        fs::copy(i, o);
+    } else {
+        println!("{:#?} -> {:#?}", i, o);
+        fs::copy(i, o);
+    }
+}
