@@ -1,10 +1,14 @@
 use std::env;
 use std::borrow::Cow;
 use std::fs;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
 pub mod data;
 use data::Data as Datas;
 use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
 use seahorse::{App, Command, Context, Flag, FlagType};
+use curl::easy::Easy;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -47,6 +51,13 @@ fn main() {
             .description("delete latest post")
             .alias("d")
             .action(d),
+            )
+        .command(
+            Command::new("icon")
+            .usage("msr i")
+            .description("timeline view avator")
+            .alias("i")
+            .action(icon_t),
             )
         .command(
             Command::new("accont")
@@ -191,3 +202,73 @@ fn a(c: &Context)  {
         fs::copy(i, o);
     }
 }
+
+fn icon(user: String) {
+    use std::process::Command;
+    let path = "/.config/msr/icon/";
+    let file = path.to_string() + &user + &"-min.png";
+    let mut f = shellexpand::tilde("~").to_string();
+    f.push_str(&file);
+    Command::new("imgcat")
+        .arg(f)
+        .spawn()
+        .expect("imgcat");
+}
+
+fn icon_timeline() -> mammut::Result<()> {
+    let mastodon = token();
+    let length = &mastodon.get_home_timeline()?.initial_items.len();
+    for n in 0..*length {
+        let avator = &mastodon.get_home_timeline()?.initial_items[n].account.avatar_static;
+        let user = &mastodon.get_home_timeline()?.initial_items[n].account.username;
+        let body = &mastodon.get_home_timeline()?.initial_items[n].content;
+        let path = "/.config/msr/icon/";
+        let file = path.to_string() + &user + &".png";
+        let min = path.to_string() + &user + &"-min.png";
+        let mut p = shellexpand::tilde("~").to_string();
+        let mut f = shellexpand::tilde("~").to_string();
+        let mut m = shellexpand::tilde("~").to_string();
+        let mut i = shellexpand::tilde("~").to_string();
+        p.push_str(&path);
+        f.push_str(&file);
+        m.push_str(&min);
+        i.push_str(&file);
+        match fs::create_dir_all(p) {
+            Err(why) => println!("! {:?}", why.kind()),
+            Ok(_) => {},
+        }
+        let mut dst = Vec::new();
+        let mut easy = Easy::new();
+        easy.url(avator).unwrap();
+        let _redirect = easy.follow_location(true);
+
+        {
+            let mut transfer = easy.transfer();
+            transfer.write_function(|data| {
+                dst.extend_from_slice(data);
+                Ok(data.len())
+            }).unwrap();
+            transfer.perform().unwrap();
+        }
+        {
+            let mut file = File::create(f)?;
+            file.write_all(dst.as_slice())?;
+            
+        }
+        let img = image::open(i).unwrap();
+        let resized = image::imageops::resize(&img, 25, 25, image::imageops::Lanczos3);
+        let check = Path::new(&m).exists();
+        if check == false {
+            resized.save(m).unwrap();
+        }
+        icon(user.to_string());
+        println!("{} {:?}", user, body);
+    }
+    Ok(())
+}
+
+fn icon_t(_c: &Context) {
+    let t = icon_timeline().unwrap();
+    println!("{:#?}", t);
+}
+
