@@ -1,72 +1,27 @@
-name: Release
+name: release
 
 on:
   push:
     tags:
       - '*'
-    branches:
+    branchs:
       - main
 
 jobs:
-  build:
-
-    strategy:
-      matrix:
-        target:
-          - x86_64-unknown-linux-musl
-          - x86_64-pc-windows-msvc
-          - x86_64-apple-darwin
-        include:
-          - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-          - target: x86_64-apple-darwin
-            os: macos-latest
-
-    runs-on: $｛｛ matrix.os ｝｝
-
+  linux_arm7:
+    name: Linux ARMv7
+    runs-on: ubuntu-latest
     steps:
-      - name: Setup code
-        uses: actions/checkout@v2
-
-      - name: Install musl tools
-        if : matrix.target == 'x86_64-unknown-linux-musl'
-        run: |
-          sudo apt install -qq -y musl-tools --no-install-recommends
-      
-      - name: Setup Rust toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
-          target: $｛｛ matrix.target ｝｝
+          target: armv7-unknown-linux-gnueabihf
           override: true
-
-      - name: Build
-        uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v1
         with:
+          use-cross: true
           command: build
-          args: --release --target=$｛｛ matrix.target ｝｝
-
-      - name: Package for linux-musl
-        if: matrix.target == 'x86_64-unknown-linux-musl'
-        run: |
-          zip --junk-paths rc-$｛｛ matrix.target ｝｝ target/$｛｛ matrix.target ｝｝/release/rc
-
-      - name: Package for windows
-        if: matrix.target == 'x86_64-pc-windows-msvc'
-        run: |
-          powershell Compress-Archive -Path target/$｛｛ matrix.target ｝｝/release/rc.exe -DestinationPath rc-$｛｛ matrix.target ｝｝.zip
-
-      - name: Package for macOS
-        if: matrix.target == 'x86_64-apple-darwin'
-        run: |
-          zip --junk-paths rc-$｛｛ matrix.target ｝｝ target/$｛｛ matrix.target ｝｝/release/rc
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: build-$｛｛ matrix.target ｝｝
-          path: rc-$｛｛ matrix.target ｝｝.zip
+          args: --target armv7-unknown-linux-gnueabihf
 
 
