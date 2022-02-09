@@ -209,10 +209,20 @@ fn icon(user: String) {
     let file = path.to_string() + &user + &"-min.png";
     let mut f = shellexpand::tilde("~").to_string();
     f.push_str(&file);
-    Command::new("imgcat")
-        .arg(f)
-        .spawn()
-        .expect("imgcat");
+    match os_type::current_platform().os_type {
+        os_type::OSType::OSX => {
+            Command::new("imgcat").arg(f).spawn().expect("imgcat");
+        }
+        os_type::OSType::Ubuntu => {
+            Command::new("img2sixel").arg(f).spawn().expect("sixel");
+        }
+        os_type::OSType::Arch => {
+            Command::new("img2sixel").arg(f).spawn().expect("sixel");
+        }
+        _ => {
+            println!("Unknown Operating System");
+        }
+    }
 }
 
 fn icon_timeline() -> mammut::Result<()> {
