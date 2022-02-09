@@ -1,4 +1,4 @@
-name: release
+name: Release
 
 on:
   push:
@@ -42,11 +42,6 @@ jobs:
           toolchain: stable
           target: $｛｛ matrix.target ｝｝
           override: true
-
-      - name: test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
 
       - name: Build
         uses: actions-rs/cargo@v1
