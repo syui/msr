@@ -208,20 +208,29 @@ fn icon(user: String) {
     let path = "/.config/msr/icon/";
     let file = path.to_string() + &user + &"-min.png";
     let mut f = shellexpand::tilde("~").to_string();
+    let mut w = shellexpand::tilde("~").to_string();
     f.push_str(&file);
+    w.push_str(&file);
     match os_type::current_platform().os_type {
         os_type::OSType::OSX => {
+            // which imgcat
+            // curl -sL https://iterm2.com/utilities/imgcat
             Command::new("imgcat").arg(f).spawn().expect("imgcat");
         }
-        os_type::OSType::Ubuntu => {
+        os_type::OSType::Arch => {
+            // pacman -S libsixel
             Command::new("img2sixel").arg(f).spawn().expect("sixel");
         }
-        os_type::OSType::Arch => {
+        os_type::OSType::Ubuntu => {
+            // apt-get install -y libsixel-bin
             Command::new("img2sixel").arg(f).spawn().expect("sixel");
         }
         _ => {
             println!("Unknown Operating System");
         }
+    }
+    if cfg!(target_os = "windows") {
+        Command::new("img2sixel").arg(w).spawn().expect("sixel");
     }
 }
 
