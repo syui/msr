@@ -208,9 +208,7 @@ fn icon(user: String) {
     let path = "/.config/msr/icon/";
     let file = path.to_string() + &user + &"-min.png";
     let mut f = shellexpand::tilde("~").to_string();
-    let mut w = shellexpand::tilde("~").to_string();
     f.push_str(&file);
-    w.push_str(&file);
     match os_type::current_platform().os_type {
         os_type::OSType::OSX => {
             // which imgcat
@@ -226,12 +224,12 @@ fn icon(user: String) {
             Command::new("img2sixel").arg(f).spawn().expect("sixel");
         }
         _ => {
-            println!("Unknown Operating System");
+            if cfg!(target_os = "windows") {
+                Command::new("img2sixel").arg(f).spawn().expect("sixel");
+            };
         }
     }
-    if cfg!(target_os = "windows") {
-        Command::new("img2sixel").arg(w).spawn().expect("sixel");
-    }
+    
 }
 
 fn icon_timeline() -> mammut::Result<()> {
