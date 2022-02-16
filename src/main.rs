@@ -198,6 +198,32 @@ fn n(_c: &Context) {
     println!("{:#?}", t);
 }
 
+fn get_domain() {
+    let data = Datas::new().unwrap();
+    let data = Data {
+        base: data.base,
+        token: data.token,
+        client_id: data.client_id,
+        client_secret: data.client_secret,
+        redirect: data.redirect,
+    };
+    use std::process::Command;
+    let e = "export MASTODON_BASE=".to_owned() + &data.base.to_string();
+    println!("{}",e);
+    env_perm::check_or_set("MASTODON_BASE", data.base.to_string()).expect("Failed to find or set MASTODON_BASE");
+    Command::new("zsh").arg("-c")
+        .arg(e)
+        .spawn().expect("export");
+    let mastodon = token();
+    let account = mastodon.verify_credentials();
+    let user = account.unwrap().username;
+    let u = "export MASTODON_USER=".to_owned() + &user;
+    println!("{}", u);
+    Command::new("zsh").arg("-c")
+        .arg(u)
+        .spawn().expect("export");
+}
+
 #[allow(unused_must_use)]
 fn a(c: &Context)  {
     let i = c.args[0].to_string();
@@ -208,10 +234,16 @@ fn a(c: &Context)  {
         let i = i.to_string();
         println!("{:#?} -> {:#?}", i, o);
         fs::copy(i, o);
+    } else if &i == "-s" {
+        let i = shellexpand::tilde("~") + "/.config/msr/social.toml";
+        let i = i.to_string();
+        println!("{:#?} -> {:#?}", i, o);
+        fs::copy(i, o);
     } else {
         println!("{:#?} -> {:#?}", i, o);
         fs::copy(i, o);
     }
+    get_domain();
 }
 
 fn icon(user: String) {
@@ -240,7 +272,6 @@ fn icon(user: String) {
             };
         }
     }
-    
 }
 
 fn icon_timeline() -> mammut::Result<()> {
