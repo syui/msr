@@ -23,3 +23,17 @@ $ msr p "test post"
 
 $ msr m ./test.png
 ```
+
+### prompt
+
+> ~/.zshrc
+
+```sh
+my_mastodon() {
+	source ~/.config/msr/msr.zsh
+		export mastodon="%F{cyan}${icon_mastodon}%f : @${MASTODON_BASE##*/}"
+#export mastodon="%F{cyan}${icon_mastodon}%f : @${MASTODON_USER}@${MASTODON_BASE##*/}"
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd my_mastodon
+```
