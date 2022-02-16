@@ -198,34 +198,6 @@ fn n(_c: &Context) {
     println!("{:#?}", t);
 }
 
-//fn get_domain() {
-//    let data = Datas::new().unwrap();
-//    let data = Data {
-//        base: data.base,
-//        token: data.token,
-//        client_id: data.client_id,
-//        client_secret: data.client_secret,
-//        redirect: data.redirect,
-//    };
-//    use std::process::Command;
-//    let e = "export MASTODON_BASE=".to_owned() + &data.base.to_string();
-//    println!("{}",e);
-//    env_perm::check_or_set("MASTODON_BASE", data.base.to_string()).expect("Failed to find or set MASTODON_BASE");
-//    Command::new("zsh").arg("-c")
-//        .arg(e)
-//        .spawn().expect("export");
-//    let mastodon = token();
-//    let account = mastodon.verify_credentials();
-//    let user = account.unwrap().username;
-//    let u = "export MASTODON_USER=".to_owned() + &user;
-//    println!("{}", u);
-//    Command::new("zsh").arg("-c")
-//        .arg(u)
-//        .spawn().expect("export");
-//    let src = "exec /bin/zsh && . ~/.zshrc";
-//    println!("{}", src);
-//}
-
 fn get_domain_zsh() {
     let data = Datas::new().unwrap();
     let data = Data {
@@ -246,13 +218,13 @@ fn get_domain_zsh() {
     });
     let mut f = fs::File::create(f).unwrap();
     f.write_all(e.as_bytes()).unwrap();
-    let mastodon = token();
-    let account = mastodon.verify_credentials();
-    let user = account.unwrap().username;
-    let u = "export MASTODON_USER=".to_owned() + &user;
-    f.write_all(u.as_bytes()).unwrap();
-    let src = "exec $SHELL && . ~/.zshrc";
-    println!("{}", src);
+    //let mastodon = token();
+    //let account = mastodon.verify_credentials();
+    //let user = account.unwrap().username;
+    //let u = "export MASTODON_USER=".to_owned() + &user;
+    //f.write_all(u.as_bytes()).unwrap();
+    //let src = "exec $SHELL && . ~/.zshrc";
+    //println!("{}", src);
 }
 
 #[allow(unused_must_use)]
