@@ -134,10 +134,10 @@ fn c_media_upload() -> Command {
         .usage("msr media [file...]")
         .action(media)
         .alias("m")
-        .description("media upload")
+        .description("media upload, ex: $ msr m ./test.png -p text")
         .flag(
             Flag::new("text", FlagType::String)
-            .description("post flag(ex. msr m ./test.png  -p text)")
+            .description("post flag(ex: $ msr m ./test.png  -p text)")
             .alias("p"),
             )
 }
@@ -146,14 +146,25 @@ fn media(c: &Context) {
     let mastodon = token();
     let file = c.args[0].to_string();
     if let Ok(text) = c.string_flag("text") {
-        // test command
+        let status = &*text.to_string();
         let s = Cow::Owned(String::from(text));
         let t = mastodon.media(
             MediaBuilder::new(file.into())
             .description(s)
-            .focus(200.0, 200.0)
+            //.focus(200.0, 200.0)
             );
-        println!("{:?}", t);
+        let id = t.as_ref().unwrap();
+        let mid = Some(vec![id.id.to_string()]);
+        let status_b = StatusBuilder {
+            status: status.to_string(),
+            in_reply_to_id: None,
+            media_ids: mid,
+            sensitive: None,
+            spoiler_text: None,
+            visibility: None,
+        };
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
     }  else {
         let t = mastodon.media(file.into());
         let id = t.as_ref().unwrap();
