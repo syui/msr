@@ -95,7 +95,14 @@ fn timeline() -> mammut::Result<()> {
     for n in 0..*length {
         let user = &mastodon.get_home_timeline()?.initial_items[n].account.username;
         let body = &mastodon.get_home_timeline()?.initial_items[n].content;
-        println!("{} {:?}", user, body);
+        let reblog = &mastodon.get_home_timeline()?.initial_items[n].reblog;
+        if body.is_empty() == true {
+            let ruser = &reblog.as_ref().unwrap().uri;
+            let rbody = &reblog.as_ref().unwrap().content;
+            println!("re:{} {:?} {:?}", user, ruser, rbody);
+        } else {
+            println!("{} {:?}", user, body);
+        }
     }
     Ok(())
 }
@@ -284,6 +291,7 @@ fn icon_timeline() -> mammut::Result<()> {
         let avator = &mastodon.get_home_timeline()?.initial_items[n].account.avatar_static;
         let user = &mastodon.get_home_timeline()?.initial_items[n].account.username;
         let body = &mastodon.get_home_timeline()?.initial_items[n].content;
+        let reblog = &mastodon.get_home_timeline()?.initial_items[n].reblog;
         let path = "/.config/msr/icon/";
         let file = path.to_string() + &user + &".png";
         let min = path.to_string() + &user + &"-min.png";
@@ -324,7 +332,13 @@ fn icon_timeline() -> mammut::Result<()> {
             resized.save(m).unwrap();
         }
         icon(user.to_string());
-        println!("{} {:?}", user, body);
+        if body.is_empty() == true {
+            let ruser = &reblog.as_ref().unwrap().uri;
+            let rbody = &reblog.as_ref().unwrap().content;
+            println!("re:{} {:?} {:?}", user, ruser, rbody);
+        } else {
+            println!("{} {:?}", user, body);
+        }
     }
     Ok(())
 }
