@@ -293,7 +293,8 @@ fn icon_timeline() -> mammut::Result<()> {
         let body = &mastodon.get_home_timeline()?.initial_items[n].content;
         let reblog = &mastodon.get_home_timeline()?.initial_items[n].reblog;
         let path = "/.config/msr/icon/";
-        let file = path.to_string() + &user + &".png";
+        let fend = Path::new(&avator).extension().unwrap().to_str().unwrap();
+        let file = path.to_string() + &user + &"." + &fend;
         let min = path.to_string() + &user + &"-min.png";
         let mut p = shellexpand::tilde("~").to_string();
         let mut f = shellexpand::tilde("~").to_string();
@@ -311,7 +312,6 @@ fn icon_timeline() -> mammut::Result<()> {
         let mut easy = Easy::new();
         easy.url(avator).unwrap();
         let _redirect = easy.follow_location(true);
-
         {
             let mut transfer = easy.transfer();
             transfer.write_function(|data| {
