@@ -53,6 +53,18 @@ fn main() {
             .action(nl),
             )
         .command(
+            Command::new("mention")
+            .usage("msr mention {}")
+            .description("mention")
+            .alias("mm")
+            .action(mention)
+            .flag(
+                Flag::new("text", FlagType::String)
+                .description("post flag(ex: $ msr mm id  -p text)")
+                .alias("p"),
+                )
+            )
+        .command(
             Command::new("delete")
             .usage("msr d")
             .description("delete latest post")
@@ -125,6 +137,26 @@ fn p(c: &Context) {
     let status_b = StatusBuilder::new(format!("{}", message));
     let post = mastodon.new_status(status_b);
     println!("{:?}", post);
+}
+
+fn mention(c: &Context) {
+    let mastodon = token();
+    if let Ok(text) = c.string_flag("text") {
+        let status = &*text.to_string();
+        //let s = Cow::Owned(String::from(text));
+        let mid = Some(c.args[0].to_string());
+        //let mid = Some(vec![c.args[0].to_string()]);
+        let status_b = StatusBuilder {
+            status: status.to_string(),
+            in_reply_to_id: mid,
+            media_ids: None,
+            sensitive: None,
+            spoiler_text: None,
+            visibility: None,
+        };
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
+    }
 }
 
 #[allow(unused_must_use)]
@@ -204,8 +236,8 @@ fn notify() -> mammut::Result<()> {
     let mastodon = token();
     let length = &mastodon.notifications()?.initial_items.len();
     for n in 0..*length {
-        //let t = &mastodon.notifications()?.initial_items[n];
-        //println!("{:#?}", t);
+        let t = &mastodon.notifications()?.initial_items[n];
+        println!("{:#?}", t);
         let date = &mastodon.notifications()?.initial_items[n].created_at;
         let ntype = &mastodon.notifications()?.initial_items[n].notification_type;
         let user = &mastodon.notifications()?.initial_items[n].account.username;
@@ -217,8 +249,8 @@ fn notify() -> mammut::Result<()> {
         } else {
             let body = &b.as_ref().unwrap().content;
             println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
-            //let mention = &b.as_ref().unwrap().mentions;
-            //println!("{:#?}", mention);
+            let mention = &b.as_ref().unwrap().mentions;
+            println!("{:#?}", mention);
         }
     }
     Ok(())
@@ -242,8 +274,9 @@ fn notifylatest() -> mammut::Result<()> {
     } else {
         let body = &b.as_ref().unwrap().content;
         println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
-        //let mention = &b.as_ref().unwrap().mentions;
-        //println!("{:#?}", mention);
+        //let mid = &b.as_ref().unwrap().mentions;
+        let mid = &b.as_ref().unwrap().id;
+        println!("{:#?}", mid);
     }
     Ok(())
 }

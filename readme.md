@@ -22,6 +22,9 @@ rust cli : https://github.com/ksk001100/seahorse
 $ msr p "test post"
 
 $ msr m ./test.png
+
+# mention
+$ msr mm $id -p "$message"
 ```
 
 ### prompt
