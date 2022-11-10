@@ -46,6 +46,13 @@ fn main() {
             .action(n),
             )
         .command(
+            Command::new("notifylatest")
+            .usage("msr nl")
+            .description("notification-latest")
+            .alias("nl")
+            .action(nl),
+            )
+        .command(
             Command::new("delete")
             .usage("msr d")
             .description("delete latest post")
@@ -195,13 +202,54 @@ fn media(c: &Context) {
 #[allow(unused_must_use)]
 fn notify() -> mammut::Result<()> {
     let mastodon = token();
-    let t = &mastodon.notifications()?.initial_items;
-    println!("{:#?}", t);
+    let length = &mastodon.notifications()?.initial_items.len();
+    for n in 0..*length {
+        //let t = &mastodon.notifications()?.initial_items[n];
+        //println!("{:#?}", t);
+        let date = &mastodon.notifications()?.initial_items[n].created_at;
+        let ntype = &mastodon.notifications()?.initial_items[n].notification_type;
+        let user = &mastodon.notifications()?.initial_items[n].account.username;
+        let id = &mastodon.notifications()?.initial_items[n].id;
+        let b = &mastodon.notifications()?.initial_items[n].status;
+        if b.is_none() {
+            let opt: Option<i32> = None;
+            println!("{:?}", opt);
+        } else {
+            let body = &b.as_ref().unwrap().content;
+            println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
+            //let mention = &b.as_ref().unwrap().mentions;
+            //println!("{:#?}", mention);
+        }
+    }
     Ok(())
 }
 
 fn n(_c: &Context) {
     let t = notify().unwrap();
+    println!("{:#?}", t);
+}
+
+fn notifylatest() -> mammut::Result<()> {
+    let mastodon = token();
+    let date = &mastodon.notifications()?.initial_items[0].created_at;
+    let ntype = &mastodon.notifications()?.initial_items[0].notification_type;
+    let user = &mastodon.notifications()?.initial_items[0].account.username;
+    let id = &mastodon.notifications()?.initial_items[0].id;
+    let b = &mastodon.notifications()?.initial_items[0].status;
+    if b.is_none() {
+        let opt: Option<i32> = None;
+        println!("{:?}", opt);
+    } else {
+        let body = &b.as_ref().unwrap().content;
+        println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
+        //let mention = &b.as_ref().unwrap().mentions;
+        //println!("{:#?}", mention);
+    }
+    Ok(())
+}
+
+fn nl(_c: &Context) {
+    let t = notifylatest().unwrap();
     println!("{:#?}", t);
 }
 
