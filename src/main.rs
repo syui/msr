@@ -272,7 +272,9 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
                 "user" => println!("{:#?}", user),
                 "date" => println!("{:#?}", date),
                 "url" => println!("{:#?}", url),
-                _ => println!("not matched(id, user, date, url)"),
+                "type" => println!("{:#?}", ntype),
+                "status" => println!("{:#?}", b),
+                _ => println!("not matched(id, user, date, url, type, status)"),
             }
         }
     } else {
