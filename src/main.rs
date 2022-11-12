@@ -267,6 +267,7 @@ fn notifylatest() -> mammut::Result<()> {
     let ntype = &mastodon.notifications()?.initial_items[0].notification_type;
     let user = &mastodon.notifications()?.initial_items[0].account.username;
     let id = &mastodon.notifications()?.initial_items[0].id;
+    let url = &mastodon.notifications()?.initial_items[0].account.url;
     let b = &mastodon.notifications()?.initial_items[0].status;
     if b.is_none() {
         let opt: Option<i32> = None;
@@ -277,6 +278,7 @@ fn notifylatest() -> mammut::Result<()> {
         //let mid = &b.as_ref().unwrap().mentions;
         let mid = &b.as_ref().unwrap().id;
         println!("{:#?}", mid);
+        println!("{:#?}", url);
     }
     Ok(())
 }
