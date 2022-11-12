@@ -51,6 +51,11 @@ fn main() {
             .description("notification-latest")
             .alias("nl")
             .action(nl),
+            .flag(
+                Flag::new("text", FlagType::String)
+                .description("post flag(ex: $ msr nl -o text)")
+                .alias("o"),
+                )
             )
         .command(
             Command::new("mention")
@@ -143,9 +148,7 @@ fn mention(c: &Context) {
     let mastodon = token();
     if let Ok(text) = c.string_flag("text") {
         let status = &*text.to_string();
-        //let s = Cow::Owned(String::from(text));
         let mid = Some(c.args[0].to_string());
-        //let mid = Some(vec![c.args[0].to_string()]);
         let status_b = StatusBuilder {
             status: status.to_string(),
             in_reply_to_id: mid,
@@ -238,20 +241,6 @@ fn notify() -> mammut::Result<()> {
     for n in 0..*length {
         let t = &mastodon.notifications()?.initial_items[n];
         println!("{:#?}", t);
-        let date = &mastodon.notifications()?.initial_items[n].created_at;
-        let ntype = &mastodon.notifications()?.initial_items[n].notification_type;
-        let user = &mastodon.notifications()?.initial_items[n].account.username;
-        let id = &mastodon.notifications()?.initial_items[n].id;
-        let b = &mastodon.notifications()?.initial_items[n].status;
-        if b.is_none() {
-            let opt: Option<i32> = None;
-            println!("{:?}", opt);
-        } else {
-            let body = &b.as_ref().unwrap().content;
-            println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
-            let mention = &b.as_ref().unwrap().mentions;
-            println!("{:#?}", mention);
-        }
     }
     Ok(())
 }
