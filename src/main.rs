@@ -50,7 +50,7 @@ fn main() {
             .usage("msr nl")
             .description("notification-latest")
             .alias("nl")
-            .action(nl),
+            .action(nl)
             .flag(
                 Flag::new("text", FlagType::String)
                 .description("post flag(ex: $ msr nl -o text)")
@@ -117,9 +117,10 @@ fn timeline() -> mammut::Result<()> {
     let mastodon = token();
     let length = &mastodon.get_home_timeline()?.initial_items.len();
     for n in 0..*length {
-        let user = &mastodon.get_home_timeline()?.initial_items[n].account.username;
-        let body = &mastodon.get_home_timeline()?.initial_items[n].content;
-        let reblog = &mastodon.get_home_timeline()?.initial_items[n].reblog;
+        let nn = &mastodon.get_home_timeline()?.initial_items[n];
+        let user = &nn.account.username;
+        let body = &nn.content;
+        let reblog = &nn.reblog;
         if body.is_empty() == true {
             let ruser = &reblog.as_ref().unwrap().uri;
             let rbody = &reblog.as_ref().unwrap().content;
@@ -165,9 +166,10 @@ fn mention(c: &Context) {
 #[allow(unused_must_use)]
 fn delete() -> mammut::Result<()> {
     let mastodon = token();
-    let user = &mastodon.get_home_timeline()?.initial_items[0].account.username;
-    let body = &mastodon.get_home_timeline()?.initial_items[0].content;
-    let id = &mastodon.get_home_timeline()?.initial_items[0].id;
+    let n = &mastodon.get_home_timeline()?.initial_items[0];
+    let user = &n.account.username;
+    let body = &n.content;
+    let id = &n.id;
     println!("delete -> {} {:?}", user, body);
     mastodon.delete_status(id);
     Ok(())
@@ -250,30 +252,47 @@ fn n(_c: &Context) {
     println!("{:#?}", t);
 }
 
-fn notifylatest() -> mammut::Result<()> {
+fn notifylatest(c: &Context) -> mammut::Result<()> {
     let mastodon = token();
-    let date = &mastodon.notifications()?.initial_items[0].created_at;
-    let ntype = &mastodon.notifications()?.initial_items[0].notification_type;
-    let user = &mastodon.notifications()?.initial_items[0].account.username;
-    let id = &mastodon.notifications()?.initial_items[0].id;
-    let url = &mastodon.notifications()?.initial_items[0].account.url;
-    let b = &mastodon.notifications()?.initial_items[0].status;
-    if b.is_none() {
-        let opt: Option<i32> = None;
-        println!("{:?}", opt);
+    let n = &mastodon.notifications()?.initial_items[0];
+    let date = &n.created_at;
+    let ntype = &n.notification_type;
+    let user = &n.account.username;
+    let id = &n.id;
+    let url = &n.account.url;
+    let b = &n.status;
+    if let Ok(text) = c.string_flag("text") {
+        let status = &*text.to_string();
+        if b.is_none() {
+            let opt: Option<i32> = None;
+            println!("{:?}", opt);
+        } else {
+            match &*status {
+                "id" => println!("{:#?}", id),
+                "user" => println!("{:#?}", user),
+                "date" => println!("{:#?}", date),
+                "url" => println!("{:#?}", url),
+                _ => println!("not matched(id, user, date, url)"),
+            }
+        }
     } else {
-        let body = &b.as_ref().unwrap().content;
-        println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
-        //let mid = &b.as_ref().unwrap().mentions;
-        let mid = &b.as_ref().unwrap().id;
-        println!("{:#?}", mid);
-        println!("{:#?}", url);
+        if b.is_none() {
+            let opt: Option<i32> = None;
+            println!("{:?}", opt);
+        } else {
+            let body = &b.as_ref().unwrap().content;
+            println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
+            let mid = &b.as_ref().unwrap().id;
+            println!("{:#?}", mid);
+            println!("{:#?}", url);
+        }
     }
     Ok(())
 }
 
-fn nl(_c: &Context) {
-    let t = notifylatest().unwrap();
+fn nl(c: &Context) {
+    //let t = notifylatest(c).unwrap();
+    let t = notifylatest(c).is_ok();
     println!("{:#?}", t);
 }
 
@@ -360,10 +379,11 @@ fn icon_timeline() -> mammut::Result<()> {
     let mastodon = token();
     let length = &mastodon.get_home_timeline()?.initial_items.len();
     for n in 0..*length {
-        let avator = &mastodon.get_home_timeline()?.initial_items[n].account.avatar_static;
-        let user = &mastodon.get_home_timeline()?.initial_items[n].account.username;
-        let body = &mastodon.get_home_timeline()?.initial_items[n].content;
-        let reblog = &mastodon.get_home_timeline()?.initial_items[n].reblog;
+        let nn = &mastodon.get_home_timeline()?.initial_items[n];
+        let avator = &nn.account.avatar_static;
+        let user = &nn.account.username;
+        let body = &nn.content;
+        let reblog = &nn.reblog;
         let path = "/.config/msr/icon/";
         let fend = Path::new(&avator).extension().unwrap().to_str().unwrap();
         let file = path.to_string() + &user + &"." + &fend;
