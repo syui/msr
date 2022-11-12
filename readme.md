@@ -25,6 +25,10 @@ $ msr m ./test.png
 
 # mention
 $ msr mm $id -p "$message"
+
+# notify
+$ msr n
+$ msr nl -o id
 ```
 
 ### prompt
