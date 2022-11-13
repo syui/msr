@@ -22,7 +22,17 @@ fn main() {
             .usage("msr s")
             .description("status")
             .alias("s")
-            .action(s),
+            .action(s)
+            .flag(
+                Flag::new("user", FlagType::String)
+                .description("user flag(ex: $ msr s -u user)")
+                .alias("u"),
+                )
+            .flag(
+                Flag::new("id", FlagType::String)
+                .description("id flag(ex: $ msr s -i user)")
+                .alias("i"),
+                )
             )
         .command(
             Command::new("post")
@@ -124,17 +134,12 @@ fn token() -> Mastodon {
     return t;
 }
 
-fn s(_c: &Context) {
-    let mastodon = token();
-    let post = mastodon.verify_credentials();
-    println!("{:?}", post);
-}
-
 fn timeline() -> mammut::Result<()> {
     let mastodon = token();
-    let length = &mastodon.get_home_timeline()?.initial_items.len();
+    let tmp = &mastodon.get_home_timeline()?.initial_items;
+    let length = &tmp.len();
     for n in 0..*length {
-        let nn = &mastodon.get_home_timeline()?.initial_items[n];
+        let nn = &tmp[n];
         let user = &nn.account.username;
         let body = &nn.content;
         let reblog = &nn.reblog;
@@ -480,4 +485,30 @@ fn follow(c: &Context) -> mammut::Result<()> {
 
 fn f(c: &Context) {
     follow(c).unwrap();
+}
+
+#[allow(unused_must_use)]
+fn status(c: &Context) -> mammut::Result<()> {
+    let mastodon = token();
+    if let Ok(user) = c.string_flag("user") {
+        let status = mastodon.search_accounts(&user, None, false)?.initial_items;
+        println!("{:#?}", status);
+    } else if let Ok(id) = c.string_flag("id") {
+        let status = &mastodon.search_accounts(&id, None, false)?.initial_items;
+        let length = &status.len();
+        for n in 0..*length {
+            let nn = &status[n];
+            let acct = &nn.acct;
+            let id = &nn.id;
+            println!("{:#?} {:#?}", acct, id);
+        }
+    } else {
+        let status = mastodon.verify_credentials();
+        println!("{:#?}", status);
+    }
+    Ok(())
+}
+
+fn s(c: &Context) {
+    status(c).unwrap();
 }
