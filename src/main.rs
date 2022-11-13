@@ -262,6 +262,7 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
     let url = &n.account.url;
     let b = &n.status;
     let body = &b.as_ref().unwrap().content;
+    let mid = &b.as_ref().unwrap().id;
     if let Ok(text) = c.string_flag("text") {
         let status = &*text.to_string();
         if b.is_none() {
@@ -270,13 +271,14 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
         } else {
             match &*status {
                 "id" => println!("{:#?}", id),
+                "mid" => println!("{:#?}", mid),
                 "user" => println!("{:#?}", user),
                 "date" => println!("{:#?}", date),
                 "body" => println!("{:#?}", body),
                 "url" => println!("{:#?}", url),
                 "type" => println!("{:#?}", ntype),
                 "status" => println!("{:#?}", b),
-                _ => println!("not matched(id, user, date, body, url, type, status)"),
+                _ => println!("not matched(id, mid, user, date, body, url, type, status)"),
             }
         }
     } else {
@@ -285,7 +287,6 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
             println!("{:?}", opt);
         } else {
             println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
-            let mid = &b.as_ref().unwrap().id;
             println!("{:#?}", mid);
             println!("{:#?}", url);
         }
