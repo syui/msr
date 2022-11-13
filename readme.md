@@ -1,20 +1,19 @@
-mastodon cli client.
-
-> ~/.config/msr/config.toml
+`msr` of mastodon cli client.
 
 ```sh
+$ git clone https://github.com/syui/msr
+$ cd msr
 $ mkdir -p ~/.config/msr
 $ cp config.toml.example ~/.config/msr/config.toml
 $ vim ~/.config/msr/config.toml
 
 $ cargo run
-
 $ ./target/debug/msr s
+
+# build
+$ cargo build
+$ ./target/debug/msr
 ```
-
-mastodon api : https://github.com/XAMPPRocky/Mammut
-
-rust cli : https://github.com/ksk001100/seahorse
 
 ### example
 
@@ -25,13 +24,17 @@ $ msr m ./test.png
 
 # mention
 $ msr mm $id -p "$message"
+$ id=`msr nl -o id|head -n 1|cut -d '"' -f 2`
 
 # notify
 $ msr n
 $ msr nl -o id
+
+# nofity-clear
+$ msr n -c
 ```
 
-### prompt
+### custom-prompt
 
 > ~/.zshrc
 
@@ -44,3 +47,10 @@ my_mastodon() {
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd my_mastodon
 ```
+
+### lib
+
+mastodon api : https://github.com/XAMPPRocky/Mammut
+
+rust cli : https://github.com/ksk001100/seahorse
+
