@@ -18,8 +18,13 @@ $ ./target/debug/msr
 ### example
 
 ```sh
+# status
+$ msr s
+
+# post
 $ msr p "test post"
 
+# media upload
 $ msr m ./test.png
 
 # mention
@@ -36,6 +41,10 @@ $ msr n -c
 # follow unfollow
 $ msr f $id
 $ msr f $id -d
+
+# search user
+$ msr s -u @ai
+$ msr s -i @ai
 ```
 
 ### custom-prompt
