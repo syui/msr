@@ -109,8 +109,8 @@ fn token() -> Mastodon {
 
 fn s(_c: &Context) {
     let mastodon = token();
-    let tl = mastodon.verify_credentials();
-    println!("{:#?}", tl);
+    let post = mastodon.verify_credentials();
+    println!("{:?}", post);
 }
 
 fn timeline() -> mammut::Result<()> {
@@ -133,8 +133,7 @@ fn timeline() -> mammut::Result<()> {
 }
 
 fn t(_c: &Context) {
-    let t = timeline().unwrap();
-    println!("{:#?}", t);
+    timeline().unwrap();
 }
 
 fn p(c: &Context) {
@@ -176,8 +175,7 @@ fn delete() -> mammut::Result<()> {
 }
 
 fn d(_c: &Context) {
-    let t = delete().unwrap();
-    println!("{:#?}", t);
+    delete().unwrap();
 }
 
 fn c_media_upload() -> Command {
@@ -239,25 +237,19 @@ fn media(c: &Context) {
 #[allow(unused_must_use)]
 fn notify(c: &Context) -> mammut::Result<()> {
     let mastodon = token();
+    let nn = &mastodon.notifications()?.initial_items;
+    println!("{:#?}", nn);
     let i = c.args[0].to_string();
     if &i == "-c" {
         mastodon.clear_notifications();
         let t = "clear_notifications";
         println!("{:#?}", t);
-    } else {
-        let nn = &mastodon.notifications()?.initial_items;
-        let length = &nn.len();
-        for n in 0..*length {
-            let t = &nn[n];
-            println!("{:#?}", t);
-        }
-    }
+    } 
     Ok(())
 }
 
 fn n(c: &Context) {
-    let t = notify(c).unwrap();
-    println!("{:#?}", t);
+    notify(c).unwrap();
 }
 
 fn notifylatest(c: &Context) -> mammut::Result<()> {
@@ -301,9 +293,7 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
 }
 
 fn nl(c: &Context) {
-    let t = notifylatest(c).unwrap();
-    //let t = notifylatest(c).is_ok();
-    println!("{:#?}", t);
+    notifylatest(c).unwrap();
 }
 
 fn get_domain_zsh() {
@@ -446,7 +436,6 @@ fn icon_timeline() -> mammut::Result<()> {
 }
 
 fn icon_t(_c: &Context) {
-    let t = icon_timeline().unwrap();
-    println!("{:#?}", t);
+    icon_timeline().unwrap();
 }
 
