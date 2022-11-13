@@ -70,7 +70,7 @@ fn main() {
             .action(mention)
             .flag(
                 Flag::new("text", FlagType::String)
-                .description("post flag(ex: $ msr mm id  -p text)")
+                .description("post flag(ex: $ msr mm id -p text)")
                 .alias("p"),
                 )
             )
@@ -87,6 +87,18 @@ fn main() {
             .description("timeline view avator")
             .alias("i")
             .action(icon_t),
+            )
+        .command(
+            Command::new("follow")
+            .usage("msr f {}")
+            .description("follow")
+            .alias("f")
+            .action(f)
+            .flag(
+                Flag::new("delete", FlagType::Bool)
+                .description("Delete flag")
+                .alias("d"),
+                )
             )
         .command(
             Command::new("accont")
@@ -449,3 +461,23 @@ fn icon_t(_c: &Context) {
     icon_timeline().unwrap();
 }
 
+#[allow(unused_must_use)]
+fn follow(c: &Context) -> mammut::Result<()> {
+    let mastodon = token();
+    let uri = Cow::Owned(String::from(c.args[0].to_string()));
+    println!("{:#?}", uri);
+    let id = c.args[0].to_string();
+    if c.bool_flag("delete") {
+        println!("{:#?}", "unfollow");
+        mastodon.unfollow(&id);
+    } else {
+        println!("{:#?}", "follow");
+        mastodon.follows(uri);
+        mastodon.follow(&id);
+    }
+    Ok(())
+}
+
+fn f(c: &Context) {
+    follow(c).unwrap();
+}

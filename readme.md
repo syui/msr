@@ -32,6 +32,10 @@ $ msr nl -o id
 
 # nofity-clear
 $ msr n -c
+
+# follow unfollow
+$ msr f $id
+$ msr f $id -d
 ```
 
 ### custom-prompt
