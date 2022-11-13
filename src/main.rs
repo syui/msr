@@ -404,9 +404,10 @@ fn icon(user: String) {
 
 fn icon_timeline() -> mammut::Result<()> {
     let mastodon = token();
-    let length = &mastodon.get_home_timeline()?.initial_items.len();
+    let tmp = &mastodon.get_home_timeline()?.initial_items;
+    let length = &tmp.len();
     for n in 0..*length {
-        let nn = &mastodon.get_home_timeline()?.initial_items[n];
+        let nn = &tmp[n];
         let avator = &nn.account.avatar_static;
         let user = &nn.account.username;
         let body = &nn.content;
