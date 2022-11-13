@@ -237,18 +237,26 @@ fn media(c: &Context) {
 }
 
 #[allow(unused_must_use)]
-fn notify() -> mammut::Result<()> {
+fn notify(c: &Context) -> mammut::Result<()> {
     let mastodon = token();
-    let length = &mastodon.notifications()?.initial_items.len();
-    for n in 0..*length {
-        let t = &mastodon.notifications()?.initial_items[n];
+    let i = c.args[0].to_string();
+    if &i == "-c" {
+        mastodon.clear_notifications();
+        let t = "clear_notifications";
         println!("{:#?}", t);
+    } else {
+        let nn = &mastodon.notifications()?.initial_items;
+        let length = &nn.len();
+        for n in 0..*length {
+            let t = &nn[n];
+            println!("{:#?}", t);
+        }
     }
     Ok(())
 }
 
-fn n(_c: &Context) {
-    let t = notify().unwrap();
+fn n(c: &Context) {
+    let t = notify(c).unwrap();
     println!("{:#?}", t);
 }
 
@@ -293,8 +301,8 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
 }
 
 fn nl(c: &Context) {
-    //let t = notifylatest(c).unwrap();
-    let t = notifylatest(c).is_ok();
+    let t = notifylatest(c).unwrap();
+    //let t = notifylatest(c).is_ok();
     println!("{:#?}", t);
 }
 
