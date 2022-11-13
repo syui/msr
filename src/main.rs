@@ -43,7 +43,12 @@ fn main() {
             .usage("msr n")
             .description("notification")
             .alias("n")
-            .action(n),
+            .action(n)
+            .flag(
+                Flag::new("clear", FlagType::Bool)
+                .description("Clear flag")
+                .alias("c"),
+                )
             )
         .command(
             Command::new("notifylatest")
@@ -239,11 +244,9 @@ fn notify(c: &Context) -> mammut::Result<()> {
     let mastodon = token();
     let nn = &mastodon.notifications()?.initial_items;
     println!("{:#?}", nn);
-    let i = c.args[0].to_string();
-    if &i == "-c" {
+    if c.bool_flag("clear") {
+        println!("{:#?}", "clear_notifications");
         mastodon.clear_notifications();
-        let t = "clear_notifications";
-        println!("{:#?}", t);
     } 
     Ok(())
 }
@@ -254,7 +257,12 @@ fn n(c: &Context) {
 
 fn notifylatest(c: &Context) -> mammut::Result<()> {
     let mastodon = token();
-    let n = &mastodon.notifications()?.initial_items[0];
+    let nn = &mastodon.notifications()?.initial_items;
+    if nn.len() == 0 {
+        println!("{:#?}", nn);
+        return Ok(());
+    }
+    let n = &nn[0];
     let date = &n.created_at;
     let ntype = &n.notification_type;
     let user = &n.account.username;
