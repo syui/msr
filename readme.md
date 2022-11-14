@@ -38,13 +38,19 @@ $ msr nl -o id
 # nofity-clear
 $ msr n -c
 
-# follow unfollow
+# follow, unfollow
 $ msr f $id
 $ msr f $id -d
 
 # search user
 $ msr s -u @ai
 $ msr s -i @ai
+
+# fav and reblog
+$ msr fa $id
+$ msr fa $id -d
+$ msr r $id
+$ msr r $id -d
 ```
 
 ### custom-prompt

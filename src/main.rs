@@ -37,7 +37,7 @@ fn main() {
         .command(
             Command::new("post")
             .usage("msr p {}")
-            .description("post message")
+            .description("post message, ex: $ msr -p $text")
             .alias("p")
             .action(p),
             )
@@ -51,7 +51,7 @@ fn main() {
         .command(
             Command::new("notify")
             .usage("msr n")
-            .description("notification")
+            .description("notification, ex: $ msr n --clear")
             .alias("n")
             .action(n)
             .flag(
@@ -63,24 +63,24 @@ fn main() {
         .command(
             Command::new("notifylatest")
             .usage("msr nl")
-            .description("notification-latest")
+            .description("notification-latest, ex: $msr nl -o id")
             .alias("nl")
             .action(nl)
             .flag(
                 Flag::new("text", FlagType::String)
-                .description("post flag(ex: $ msr nl -o text)")
+                .description("post flag(ex: $ msr nl -o $text)")
                 .alias("o"),
                 )
             )
         .command(
             Command::new("mention")
             .usage("msr mention {}")
-            .description("mention")
+            .description("mention, ex: $ msr mm $id -p $text")
             .alias("mm")
             .action(mention)
             .flag(
                 Flag::new("text", FlagType::String)
-                .description("post flag(ex: $ msr mm id -p text)")
+                .description("post flag(ex: $ msr mm $id -p $text)")
                 .alias("p"),
                 )
             )
@@ -101,9 +101,33 @@ fn main() {
         .command(
             Command::new("follow")
             .usage("msr f {}")
-            .description("follow")
+            .description("follow, ex: $ msr f $id")
             .alias("f")
             .action(f)
+            .flag(
+                Flag::new("delete", FlagType::Bool)
+                .description("Delete flag")
+                .alias("d"),
+                )
+            )
+        .command(
+            Command::new("reblog")
+            .usage("msr r {}")
+            .description("reblog, ex: $ msr r $id")
+            .alias("r")
+            .action(r)
+            .flag(
+                Flag::new("delete", FlagType::Bool)
+                .description("Delete flag")
+                .alias("d"),
+                )
+            )
+        .command(
+            Command::new("fav")
+            .usage("msr fa {}")
+            .description("fav, ex: $ msr fa $id")
+            .alias("fa")
+            .action(fa)
             .flag(
                 Flag::new("delete", FlagType::Bool)
                 .description("Delete flag")
@@ -140,15 +164,16 @@ fn timeline() -> mammut::Result<()> {
     let length = &tmp.len();
     for n in 0..*length {
         let nn = &tmp[n];
+        let id = &nn.id;
         let user = &nn.account.username;
         let body = &nn.content;
         let reblog = &nn.reblog;
         if body.is_empty() == true {
             let ruser = &reblog.as_ref().unwrap().uri;
             let rbody = &reblog.as_ref().unwrap().content;
-            println!("re:{} {:?} {:?}", user, ruser, rbody);
+            println!("re:{} {:?} {:?} {:?}", user, ruser, rbody, id);
         } else {
-            println!("{} {:?}", user, body);
+            println!("{} {:?} {:?}", user, body, id);
         }
     }
     Ok(())
@@ -512,4 +537,40 @@ fn status(c: &Context) -> mammut::Result<()> {
 
 fn s(c: &Context) {
     status(c).unwrap();
+}
+
+#[allow(unused_must_use)]
+fn reblog(c: &Context) -> mammut::Result<()> {
+    let mastodon = token();
+    let id = c.args[0].to_string();
+    if c.bool_flag("delete") {
+        println!("{:#?}", "unreblog");
+        mastodon.unreblog(&id);
+    } else {
+        println!("{:#?}", "reblog");
+        mastodon.reblog(&id);
+    }
+    Ok(())
+}
+
+fn r(c: &Context) {
+    reblog(c).unwrap();
+}
+
+#[allow(unused_must_use)]
+fn fav(c: &Context) -> mammut::Result<()> {
+    let mastodon = token();
+    let id = c.args[0].to_string();
+    if c.bool_flag("delete") {
+        println!("{:#?}", "unfav");
+        mastodon.unfavourite(&id);
+    } else {
+        println!("{:#?}", "fav");
+        mastodon.favourite(&id);
+    }
+    Ok(())
+}
+
+fn fa(c: &Context) {
+    fav(c).unwrap();
 }
