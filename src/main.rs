@@ -236,6 +236,11 @@ fn c_media_upload() -> Command {
             .description("post flag(ex: $ msr m ./test.png  -p text)")
             .alias("p"),
             )
+        .flag(
+            Flag::new("uri", FlagType::Bool)
+            .description("Uri flag")
+            .alias("u"),
+            )
 }
 
 fn media(c: &Context) {
@@ -260,7 +265,12 @@ fn media(c: &Context) {
             visibility: None,
         };
         let post = mastodon.new_status(status_b);
-        println!("{:?}", post);
+        if c.bool_flag("uri") {
+            let body = post.unwrap().uri;
+            println!("{:#?}", body);
+        } else {
+            println!("{:?}", post);
+        }
     }  else {
         let t = mastodon.media(file.into());
         let id = t.as_ref().unwrap();
@@ -277,7 +287,12 @@ fn media(c: &Context) {
             visibility: None,
         };
         let post = mastodon.new_status(status_b);
-        println!("{:?}", post);
+        if c.bool_flag("uri") {
+            let body = post.unwrap().uri;
+            println!("{:#?}", body);
+        } else {
+            println!("{:?}", post);
+        }
     }
 }
 
