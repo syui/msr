@@ -561,7 +561,12 @@ fn status(c: &Context) -> mammut::Result<()> {
                     for nnn in 0..*length_tl {
                         let body = &tl[nnn].content;
                         let mid = &tl[nnn].id;
-                        println!("{:#?} {:#?}", mid, body);
+                        if body.is_empty() == false {
+                            println!("{:#?} {:#?}", mid, body);
+                        } else {
+                            let reblog = &tl[nnn].reblog.as_ref().unwrap().content;
+                            println!("{:#?} {:#?}", mid, reblog);
+                        }
                     }
                 }
             } else {

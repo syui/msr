@@ -46,6 +46,10 @@ $ msr f $id -d
 $ msr s -u @ai
 $ msr s -i @ai
 
+# search post
+msr s -i "@syui@syui.cf" -t
+msr s -i "@syui@syui.cf" -t -a
+
 # fav and reblog
 $ msr fa $id
 $ msr fa $id -d
