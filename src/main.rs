@@ -33,6 +33,16 @@ fn main() {
                 .description("id flag(ex: $ msr s -i user)")
                 .alias("i"),
                 )
+            .flag(
+                Flag::new("timeline", FlagType::Bool)
+                .description("Timeline flag")
+                .alias("t"),
+                )
+            .flag(
+                Flag::new("all", FlagType::Bool)
+                .description("All flag")
+                .alias("a"),
+                )
             )
         .command(
             Command::new("post")
@@ -541,7 +551,22 @@ fn status(c: &Context) -> mammut::Result<()> {
             let nn = &status[n];
             let acct = &nn.acct;
             let id = &nn.id;
-            println!("{:#?} {:#?}", acct, id);
+            if c.bool_flag("timeline") {
+                println!("{:#?}", acct);
+                let tl = &mastodon.statuses(&id, None)?.initial_items;
+                if c.bool_flag("all") {
+                    println!("{:#?}", tl);
+                } else {
+                    let length_tl = &tl.len();
+                    for nnn in 0..*length_tl {
+                        let body = &tl[nnn].content;
+                        let mid = &tl[nnn].id;
+                        println!("{:#?} {:#?}", mid, body);
+                    }
+                }
+            } else {
+                println!("{:#?} {:#?}", acct, id);
+            }
         }
     } else {
         let status = mastodon.verify_credentials();
