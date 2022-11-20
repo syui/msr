@@ -424,10 +424,11 @@ fn a(c: &Context)  {
     get_domain_zsh();
 }
 
-fn icon(user: String) {
+fn icon(filef: String) {
     use std::process::Command;
     let path = "/.config/msr/icon/";
-    let file = path.to_string() + &user + &"-min.png";
+    let file = path.to_string() + &filef;
+    //let file = path.to_string() + &user + &"-min.png";
     let mut f = shellexpand::tilde("~").to_string();
     f.push_str(&file);
     match os_type::current_platform().os_type {
@@ -438,15 +439,15 @@ fn icon(user: String) {
         }
         os_type::OSType::Arch => {
             // pacman -S libsixel
-            Command::new("img2sixel").arg(f).spawn().expect("sixel");
+            Command::new("img2sixel").arg(f).arg("-h 30").spawn().expect("sixel");
         }
         os_type::OSType::Ubuntu => {
             // apt-get install -y libsixel-bin
-            Command::new("img2sixel").arg(f).spawn().expect("sixel");
+            Command::new("img2sixel").arg(f).arg("-h 30").spawn().expect("sixel");
         }
         _ => {
             if cfg!(target_os = "windows") {
-                Command::new("img2sixel").arg(f).spawn().expect("sixel");
+                Command::new("img2sixel").arg(f).arg("-h 30").spawn().expect("sixel");
             };
         }
     }
@@ -465,6 +466,7 @@ fn icon_timeline() -> mammut::Result<()> {
         let path = "/.config/msr/icon/";
         let fend = Path::new(&avator).extension().unwrap().to_str().unwrap();
         let file = path.to_string() + &user + &"." + &fend;
+        let filef = user.to_string() + &"." + &fend;
         let min = path.to_string() + &user + &"-min.png";
         let mut p = shellexpand::tilde("~").to_string();
         let mut f = shellexpand::tilde("~").to_string();
@@ -496,12 +498,12 @@ fn icon_timeline() -> mammut::Result<()> {
             
         }
         let img = image::open(i).unwrap();
-        let resized = image::imageops::resize(&img, 25, 25, image::imageops::Lanczos3);
+        let resized = image::imageops::resize(&img, 30, 30, image::imageops::Lanczos3);
         let check = Path::new(&m).exists();
         if check == false {
             resized.save(m).unwrap();
         }
-        icon(user.to_string());
+        icon(filef.to_string());
         if body.is_empty() == true {
             let ruser = &reblog.as_ref().unwrap().uri;
             let rbody = &reblog.as_ref().unwrap().content;
