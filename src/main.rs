@@ -473,9 +473,6 @@ fn icon_timeline() -> mammut::Result<()> {
         p.push_str(&path);
         f.push_str(&file);
         i.push_str(&file);
-        //let min = path.to_string() + &user + &"-min.png";
-        //let mut m = shellexpand::tilde("~").to_string();
-        //m.push_str(&min);
         match fs::create_dir_all(p) {
             Err(why) => println!("! {:?}", why.kind()),
             Ok(_) => {},
