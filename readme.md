@@ -57,6 +57,20 @@ $ msr r $id
 $ msr r $id -d
 ```
 
+### icon
+
+linux : img2sixel
+
+mac : imgcat
+
+not shown on tmux
+
+```sh
+# timeline
+$ msr i
+$ ls ~/.config/msr/icon/
+```
+
 ### custom-prompt
 
 > ~/.zshrc
