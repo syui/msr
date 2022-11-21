@@ -439,15 +439,15 @@ fn icon(filef: String) {
         }
         os_type::OSType::Arch => {
             // pacman -S libsixel
-            Command::new("img2sixel").arg(f).arg("-h 30").spawn().expect("sixel");
+            Command::new("img2sixel").arg(f).arg("-h 25").spawn().expect("sixel");
         }
         os_type::OSType::Ubuntu => {
             // apt-get install -y libsixel-bin
-            Command::new("img2sixel").arg(f).arg("-h 30").spawn().expect("sixel");
+            Command::new("img2sixel").arg(f).arg("-h 25").spawn().expect("sixel");
         }
         _ => {
             if cfg!(target_os = "windows") {
-                Command::new("img2sixel").arg(f).arg("-h 30").spawn().expect("sixel");
+                Command::new("img2sixel").arg(f).arg("-h 25").spawn().expect("sixel");
             };
         }
     }
@@ -467,41 +467,37 @@ fn icon_timeline() -> mammut::Result<()> {
         let fend = Path::new(&avator).extension().unwrap().to_str().unwrap();
         let file = path.to_string() + &user + &"." + &fend;
         let filef = user.to_string() + &"." + &fend;
-        let min = path.to_string() + &user + &"-min.png";
         let mut p = shellexpand::tilde("~").to_string();
         let mut f = shellexpand::tilde("~").to_string();
-        let mut m = shellexpand::tilde("~").to_string();
         let mut i = shellexpand::tilde("~").to_string();
         p.push_str(&path);
         f.push_str(&file);
-        m.push_str(&min);
         i.push_str(&file);
+        //let min = path.to_string() + &user + &"-min.png";
+        //let mut m = shellexpand::tilde("~").to_string();
+        //m.push_str(&min);
         match fs::create_dir_all(p) {
             Err(why) => println!("! {:?}", why.kind()),
             Ok(_) => {},
         }
-        let mut dst = Vec::new();
-        let mut easy = Easy::new();
-        easy.url(avator).unwrap();
-        let _redirect = easy.follow_location(true);
-        {
-            let mut transfer = easy.transfer();
-            transfer.write_function(|data| {
-                dst.extend_from_slice(data);
-                Ok(data.len())
-            }).unwrap();
-            transfer.perform().unwrap();
-        }
-        {
-            let mut file = File::create(f)?;
-            file.write_all(dst.as_slice())?;
-            
-        }
-        let img = image::open(i).unwrap();
-        let resized = image::imageops::resize(&img, 30, 30, image::imageops::Lanczos3);
-        let check = Path::new(&m).exists();
+        let check = Path::new(&f).exists();
         if check == false {
-            resized.save(m).unwrap();
+            let mut dst = Vec::new();
+            let mut easy = Easy::new();
+            easy.url(avator).unwrap();
+            let _redirect = easy.follow_location(true);
+            {
+                let mut transfer = easy.transfer();
+                transfer.write_function(|data| {
+                    dst.extend_from_slice(data);
+                    Ok(data.len())
+                }).unwrap();
+                transfer.perform().unwrap();
+            }
+            {
+                let mut file = File::create(f)?;
+                file.write_all(dst.as_slice())?;
+            }
         }
         icon(filef.to_string());
         if body.is_empty() == true {
@@ -511,6 +507,12 @@ fn icon_timeline() -> mammut::Result<()> {
         } else {
             println!("{} {:?}", user, body);
         }
+        //let img = image::open(i).unwrap();
+        //let resized = image::imageops::resize(&img, 25, 25, image::imageops::Lanczos3);
+        //let check = Path::new(&m).exists();
+        //if check == false {
+        //    resized.save(m).unwrap();
+        //}
     }
     Ok(())
 }
