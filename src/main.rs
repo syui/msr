@@ -32,7 +32,7 @@ fn main() {
                 Flag::new("id", FlagType::String)
                 .description("id flag(ex: $ msr s -i user)")
                 .alias("i"),
-                )
+               )
             .flag(
                 Flag::new("timeline", FlagType::Bool)
                 .description("Timeline flag")
@@ -79,6 +79,18 @@ fn main() {
             .flag(
                 Flag::new("text", FlagType::String)
                 .description("post flag(ex: $ msr nl -o $text)")
+                .alias("o"),
+                )
+            )
+        .command(
+            Command::new("notifysecond")
+            .usage("msr nls")
+            .description("notification, ex: $msr nls")
+            .alias("nls")
+            .action(nls)
+            .flag(
+                Flag::new("text", FlagType::String)
+                .description("post flag(ex: $ msr nls -o $text)")
                 .alias("o"),
                 )
             )
@@ -371,6 +383,54 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
 
 fn nl(c: &Context) {
     notifylatest(c).unwrap();
+}
+
+fn notifysecond(c: &Context) -> mammut::Result<()> {
+    let mastodon = token();
+    let nn = &mastodon.notifications()?.initial_items;
+    if nn.len() == 0 {
+        println!("{:#?}", nn);
+        return Ok(());
+    }
+    let length = &nn.len();
+    for n in 0..*length {
+        let tmp = &nn[n];
+        let date = &tmp.created_at;
+        let ntype = &tmp.notification_type;
+        let user = &tmp.account.username;
+        let id = &tmp.id;
+        let url = &tmp.account.url;
+        let b = &tmp.status;
+        if b.is_none() {
+            continue;
+        }
+        let body = &b.as_ref().unwrap().content;
+        let mid = &b.as_ref().unwrap().id;
+        if let Ok(text) = c.string_flag("text") {
+            let status = &*text.to_string();
+            match &*status {
+                "id" => println!("{:#?}", id),
+                "mid" => println!("{:#?}", mid),
+                "user" => println!("{:#?}", user),
+                "date" => println!("{:#?}", date),
+                "body" => println!("{:#?}", body),
+                "url" => println!("{:#?}", url),
+                "type" => println!("{:#?}", ntype),
+                "status" => println!("{:#?}", b),
+                _ => println!("not matched(id, mid, user, date, body, url, type, status)"),
+            }
+        } else {
+
+            println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
+            println!("{:#?}", mid);
+            println!("{:#?}", url);
+        }
+    }
+    Ok(())
+}
+
+fn nls(c: &Context) {
+    notifysecond(c).unwrap();
 }
 
 fn get_domain_zsh() {
