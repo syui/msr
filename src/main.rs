@@ -9,6 +9,7 @@ use data::Data as Datas;
 use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
 use seahorse::{App, Command, Context, Flag, FlagType};
 use curl::easy::Easy;
+use serde::{Deserialize, Serialize};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -165,6 +166,16 @@ fn main() {
             )
         .command(c_media_upload());
     app.run(args);
+}
+
+#[derive(Serialize, Deserialize)]
+struct Address {
+    user : String,
+    id : String,
+    mid : String,
+    url : String,
+    date : String,
+    body : String,
 }
 
 fn token() -> Mastodon {
@@ -350,6 +361,15 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
     let b = &n.status;
     let body = &b.as_ref().unwrap().content;
     let mid = &b.as_ref().unwrap().id;
+    let address = Address {
+        user : user.to_owned(),
+        id : id.to_owned(),
+        mid : mid.to_owned(),
+        url : url.to_owned(),
+        date : date.to_owned().to_string(),
+        body : body.to_owned(),
+    };
+    let j = serde_json::to_string(&address)?;
     if let Ok(text) = c.string_flag("text") {
         let status = &*text.to_string();
         if b.is_none() {
@@ -357,12 +377,12 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
             println!("{:?}", opt);
         } else {
             match &*status {
-                "id" => println!("{:#?}", id),
-                "mid" => println!("{:#?}", mid),
-                "user" => println!("{:#?}", user),
-                "date" => println!("{:#?}", date),
-                "body" => println!("{:#?}", body),
-                "url" => println!("{:#?}", url),
+                "id" => println!("{}", id),
+                "mid" => println!("{}", mid),
+                "user" => println!("{}", user),
+                "date" => println!("{}", date),
+                "body" => println!("{}", body),
+                "url" => println!("{}", url),
                 "type" => println!("{:#?}", ntype),
                 "status" => println!("{:#?}", b),
                 _ => println!("not matched(id, mid, user, date, body, url, type, status)"),
@@ -373,9 +393,7 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
             let opt: Option<i32> = None;
             println!("{:?}", opt);
         } else {
-            println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
-            println!("{:#?}", mid);
-            println!("{:#?}", url);
+            println!("{}", j);
         }
     }
     Ok(())
@@ -406,24 +424,39 @@ fn notifysecond(c: &Context) -> mammut::Result<()> {
         }
         let body = &b.as_ref().unwrap().content;
         let mid = &b.as_ref().unwrap().id;
+        let address = Address {
+           user : user.to_owned(),
+           id : id.to_owned(),
+           mid : mid.to_owned(),
+           url : url.to_owned(),
+           date : date.to_owned().to_string(),
+           body : body.to_owned(),
+        };
+        let j = serde_json::to_string(&address)?;
         if let Ok(text) = c.string_flag("text") {
             let status = &*text.to_string();
             match &*status {
-                "id" => println!("{:#?}", id),
-                "mid" => println!("{:#?}", mid),
-                "user" => println!("{:#?}", user),
-                "date" => println!("{:#?}", date),
-                "body" => println!("{:#?}", body),
-                "url" => println!("{:#?}", url),
+                "id" => println!("{}", id),
+                "mid" => println!("{}", mid),
+                "user" => println!("{}", user),
+                "date" => println!("{}", date),
+                "body" => println!("{}", body),
+                "url" => println!("{}", url),
                 "type" => println!("{:#?}", ntype),
                 "status" => println!("{:#?}", b),
                 _ => println!("not matched(id, mid, user, date, body, url, type, status)"),
             }
         } else {
-
-            println!("{:#?} {:#?} {:#?} {:#?} {:?}", date, ntype, id, user, body);
-            println!("{:#?}", mid);
-            println!("{:#?}", url);
+            if n == 0 {
+                println!("{}", "[");
+            }
+            println!("{}", j);
+            if n != nn.len() - 1{
+                println!("{}", ",");
+            }
+            if n == nn.len() - 1{
+                println!("{}", "]");
+            }
         }
     }
     Ok(())

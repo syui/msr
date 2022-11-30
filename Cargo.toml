@@ -16,4 +16,4 @@ config = { git = "https://github.com/mehcode/config-rs", branch = "master" }
 shellexpand = "*"
 curl = "*"
 image = "*"
-os_type="2.4"
+os_type = "2.4"
