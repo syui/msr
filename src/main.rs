@@ -275,7 +275,7 @@ fn c_media_upload() -> Command {
             .alias("u"),
             )
         .flag(
-            Flag::new("rid", FlagType::Bool)
+            Flag::new("rid", FlagType::String)
             .description("Mention flag")
             .alias("r"),
             )
