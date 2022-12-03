@@ -24,12 +24,16 @@ $ msr s
 # post
 $ msr p "test post"
 
-# media upload
-$ msr m ./test.png
-
 # mention
 $ msr mm $id -p "$message"
 $ id=`msr nl -o id|head -n 1|cut -d '"' -f 2`
+
+# media upload
+$ msr m ./test.png
+$ msr m ./test.png -p "text" -u
+
+# media rep
+$ msr m ./test.png -rid $id
 
 # notify
 $ msr n

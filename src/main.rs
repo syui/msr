@@ -274,21 +274,31 @@ fn c_media_upload() -> Command {
             .description("Uri flag")
             .alias("u"),
             )
+        .flag(
+            Flag::new("rid", FlagType::Bool)
+            .description("Mention flag")
+            .alias("rid"),
+            )
 }
 
 fn media(c: &Context) {
     let mastodon = token();
     let file = c.args[0].to_string();
-    if let Ok(text) = c.string_flag("text") {
-        let status = &*text.to_string();
-        let s = Cow::Owned(String::from(text));
+    let t = if let Ok(text) = c.string_flag("text") {
         let t = mastodon.media(
             MediaBuilder::new(file.into())
-            .description(s)
+            .description(Cow::Owned(String::from(text)))
             //.focus(200.0, 200.0)
             );
-        let id = t.as_ref().unwrap();
-        let mid = Some(vec![id.id.to_string()]);
+        t
+    } else {
+        let t = mastodon.media(file.into());
+        t
+    };
+    let id = t.as_ref().unwrap();
+    let mid = Some(vec![id.id.to_string()]);
+    let status_b = if let Ok(text) = c.string_flag("text") {
+        let status = &*text.to_string();
         let status_b = StatusBuilder {
             status: status.to_string(),
             in_reply_to_id: None,
@@ -297,20 +307,21 @@ fn media(c: &Context) {
             spoiler_text: None,
             visibility: None,
         };
-        let post = mastodon.new_status(status_b);
-        if c.bool_flag("uri") {
-            let body = post.unwrap().uri;
-            println!("{:#?}", body);
-        } else {
-            println!("{:?}", post);
-        }
-    }  else {
-        let t = mastodon.media(file.into());
-        let id = t.as_ref().unwrap();
-        println!("{:?}", id);
-        let mid = Some(vec![id.id.to_string()]);
+        status_b
+    } else if let Ok(rid) = c.string_flag("rid") {
         let status = "#media".to_string();
-        println!("{:?}", mid);
+        let rid = &*rid.to_string();
+        let status_b = StatusBuilder {
+            status: status,
+            in_reply_to_id: Some(rid.to_string()),
+            media_ids: mid,
+            sensitive: None,
+            spoiler_text: None,
+            visibility: None,
+        };
+        status_b
+    } else {
+        let status = "#media".to_string();
         let status_b = StatusBuilder {
             status: status,
             in_reply_to_id: None,
@@ -319,13 +330,14 @@ fn media(c: &Context) {
             spoiler_text: None,
             visibility: None,
         };
-        let post = mastodon.new_status(status_b);
-        if c.bool_flag("uri") {
-            let body = post.unwrap().uri;
-            println!("{:#?}", body);
-        } else {
-            println!("{:?}", post);
-        }
+        status_b
+    };
+    let post = mastodon.new_status(status_b);
+    if c.bool_flag("uri") {
+        let body = post.unwrap().uri;
+        println!("{:#?}", body);
+    } else {
+        println!("{:?}", post);
     }
 }
 
