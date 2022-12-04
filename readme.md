@@ -93,6 +93,15 @@ add-zsh-hook precmd my_mastodon
 
 ### misskey
 
+> ~/.config/msr/config.toml
+
+```sh
+misskey_token = "xxx"
+misskey_base = "https://misky.syui.cf"
+misskey_api = "https://misky.syui.cf/api"
+misskey_stream = "wss://misky.syui.cf/streaming"
+```
+
 ```sh
 $ msr misky -p "hello world"
 ```
