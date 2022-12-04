@@ -101,3 +101,5 @@ mastodon api : https://github.com/XAMPPRocky/Mammut
 
 rust cli : https://github.com/ksk001100/seahorse
 
+misskey api : https://github.com/coord-e/misskey-rs
+
