@@ -1,5 +1,7 @@
 `msr` of mastodon cli client.
 
+and misskey client.
+
 ```sh
 $ git clone https://github.com/syui/msr
 $ cd msr
