@@ -10,6 +10,10 @@ pub struct Data {
     pub client_id: Cow<'static, str>,
     pub client_secret: Cow<'static, str>,
     pub redirect: Cow<'static, str>,
+    pub misskey_base: url::Url,
+    pub misskey_api: url::Url,
+    pub misskey_stream: url::Url,
+    pub misskey_token: Cow<'static, str>,
 }
 
 impl Data {
@@ -22,3 +26,4 @@ impl Data {
         s.try_deserialize()
     }
 }
+

@@ -11,6 +11,12 @@ use seahorse::{App, Command, Context, Flag, FlagType};
 use curl::easy::Easy;
 use serde::{Deserialize, Serialize};
 
+// misskey
+use futures::stream::TryStreamExt;
+use anyhow::Result;
+use misskey::prelude::*;
+use misskey::{WebSocketClient, HttpClient};
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let app = App::new(env!("CARGO_PKG_NAME"))
@@ -164,7 +170,27 @@ fn main() {
             .alias("a")
             .action(a),
             )
-        .command(c_media_upload());
+        .command(c_media_upload())
+
+        // misskey command
+        .command(
+            Command::new("misskey")
+            .usage("msr misskey")
+            .description("post message, ex: $ msr misky -t")
+            .alias("misky")
+            .action(misskey_t)
+            .flag(
+                Flag::new("post", FlagType::String)
+                .description("post flag(ex: $ msr misky -p $text)")
+                .alias("p"),
+                )
+            .flag(
+                Flag::new("timeline", FlagType::Bool)
+                .description("timeline flag(ex: $ msr misky -t)")
+                .alias("t"),
+                )
+            )
+        ;
     app.run(args);
 }
 
@@ -724,4 +750,46 @@ fn fav(c: &Context) -> mammut::Result<()> {
 
 fn fa(c: &Context) {
     fav(c).unwrap();
+}
+
+// misskey
+#[tokio::main]
+async fn misskey_post(c: &Context) -> anyhow::Result<()> {
+    let opt = Datas::new().unwrap();
+    if let Ok(post) = c.string_flag("post") {
+        let i = &*post.to_string();
+        let client = HttpClient::builder(opt.misskey_api)
+            .token(opt.misskey_token)
+            .build()?;
+        client.create_note(i).await?;
+    }
+    Ok(())
+}
+
+#[tokio::main]
+async fn misskey_timeline() -> Result<()> {
+    let opt = Datas::new().unwrap();
+    println!("{:?}", opt.misskey_stream);
+    let client = WebSocketClient::builder(opt.misskey_stream)
+        .token(opt.misskey_token)
+        .connect()
+        .await?;
+    let mut stream = client.local_timeline().await?;
+    while let Some(note) = stream.try_next().await? {
+        println!(
+            "<@{}> {}",
+            note.user.username,
+            note.text.unwrap_or_default()
+            );
+    }
+    Ok(())
+}
+
+fn misskey_t(c: &Context) {
+  if c.bool_flag("timeline") {
+        misskey_timeline().unwrap();
+  }
+  if let Ok(_post) = c.string_flag("post") {
+      misskey_post(c).unwrap();
+  }
 }

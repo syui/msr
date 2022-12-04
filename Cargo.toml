@@ -17,3 +17,10 @@ shellexpand = "*"
 curl = "*"
 image = "*"
 os_type = "2.4"
+
+misskey = "*"
+anyhow = "1.0"
+tokio = { version = "1.22.0", features = ["full"] }
+structopt = "0.3.16"
+futures = "0.3.5"
+url = { version = "2.0", features = ["serde"] }
