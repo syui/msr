@@ -89,6 +89,12 @@ autoload -Uz add-zsh-hook
 add-zsh-hook precmd my_mastodon
 ```
 
+### misskey
+
+```sh
+$ msr misky -p "hello world"
+```
+
 ### lib
 
 mastodon api : https://github.com/XAMPPRocky/Mammut
