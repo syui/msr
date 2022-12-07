@@ -190,6 +190,20 @@ fn main() {
                 .alias("t"),
                 )
             )
+
+        // other command
+        .command(
+            Command::new("char")
+            .usage("msr char {}")
+            .description("account change, ex : $ msr char $text")
+            .alias("char")
+            .action(char_c)
+            .flag(
+                Flag::new("limit", FlagType::Int)
+                .description("limit flag")
+                .alias("l"),
+                )
+            )
         ;
     app.run(args);
 }
@@ -786,10 +800,34 @@ async fn misskey_timeline() -> Result<()> {
 }
 
 fn misskey_t(c: &Context) {
-  if c.bool_flag("timeline") {
+    if c.bool_flag("timeline") {
         misskey_timeline().unwrap();
-  }
-  if let Ok(_post) = c.string_flag("post") {
-      misskey_post(c).unwrap();
-  }
+    }
+    if let Ok(_post) = c.string_flag("post") {
+        misskey_post(c).unwrap();
+    }
+}
+
+fn char_l(c: &Context) -> i32 {
+    if let Ok(limit) = c.int_flag("limit") {
+        let l: i32 = limit.try_into().unwrap();
+        let l = l - 1;
+        return l.try_into().unwrap();
+    } else {
+        let l = 490;
+        return l;
+    }
+}
+
+fn char_c(c: &Context) {
+    let i = c.args[0].to_string();
+    let mut s = String::new();
+    let l = char_l(c);
+    for ii in i.chars().enumerate() {
+        match ii.0 {
+            n if n > l.try_into().unwrap() => {break}
+            _ => {s.push(ii.1)}
+        }
+    }
+    println!("{}",s);
 }

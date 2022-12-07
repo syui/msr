@@ -17,6 +17,15 @@ $ cargo build
 $ ./target/debug/msr
 ```
 
+err misskey env `~/.config/msr/config.toml`
+
+```sh
+misskey_token = "xxx"
+misskey_base = "https://example.com"
+misskey_api = "https://example.com/api"
+misskey_stream = "wss://example.com/streaming"
+```
+
 ### example
 
 ```sh

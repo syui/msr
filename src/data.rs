@@ -26,4 +26,3 @@ impl Data {
         s.try_deserialize()
     }
 }
-
