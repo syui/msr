@@ -6,6 +6,7 @@ use std::io::prelude::*;
 use std::path::Path;
 pub mod data;
 use data::Data as Datas;
+use data::Datam as Datams;
 use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
 use seahorse::{App, Command, Context, Flag, FlagType};
 use curl::easy::Easy;
@@ -769,7 +770,7 @@ fn fa(c: &Context) {
 // misskey
 #[tokio::main]
 async fn misskey_post(c: &Context) -> anyhow::Result<()> {
-    let opt = Datas::new().unwrap();
+    let opt = Datams::new().unwrap();
     if let Ok(post) = c.string_flag("post") {
         let i = &*post.to_string();
         let client = HttpClient::builder(opt.misskey_api)
@@ -782,7 +783,7 @@ async fn misskey_post(c: &Context) -> anyhow::Result<()> {
 
 #[tokio::main]
 async fn misskey_timeline() -> Result<()> {
-    let opt = Datas::new().unwrap();
+    let opt = Datams::new().unwrap();
     println!("{:?}", opt.misskey_stream);
     let client = WebSocketClient::builder(opt.misskey_stream)
         .token(opt.misskey_token)
