@@ -196,11 +196,46 @@ fn main() {
         .command(
             Command::new("char")
             .usage("msr char {}")
-            .description("account change, ex : $ msr char $text")
+            .description("char change, ex : $ msr char $text")
             .alias("char")
             .action(char_c)
             .flag(
                 Flag::new("limit", FlagType::Int)
+                .description("limit flag")
+                .alias("l"),
+                )
+            )
+        // other command
+        .command(
+            Command::new("char-next")
+            .usage("msr char-next {}")
+            .description("char, ex : $ msr cn $text -mm $mid")
+            .alias("cn")
+            .action(char_cn)
+            .flag(
+                Flag::new("mid", FlagType::String)
+                .description("mid flag")
+                .alias("mm"),
+                )
+            .flag(
+                Flag::new("limit", FlagType::String)
+                .description("limit flag")
+                .alias("l"),
+                )
+            )
+        .command(
+            Command::new("char-line")
+            .usage("msr char-line {}")
+            .description("char line, ex : $ msr cl $text")
+            .alias("cl")
+            .action(char_cl)
+            .flag(
+                Flag::new("mid", FlagType::String)
+                .description("mid flag")
+                .alias("mm"),
+                )
+            .flag(
+                Flag::new("limit", FlagType::String)
                 .description("limit flag")
                 .alias("l"),
                 )
@@ -831,4 +866,113 @@ fn char_c(c: &Context) {
         }
     }
     println!("{}",s);
+}
+
+#[allow(unused_must_use)]
+fn char_mention(mid: String, s: String) -> mammut::Result<()> {
+    let mastodon = token();
+    let status_b = StatusBuilder {
+        status: s,
+        in_reply_to_id: Some(mid),
+        media_ids: None,
+        sensitive: None,
+        spoiler_text: None,
+        visibility: None,
+    };
+    let post = mastodon.new_status(status_b);
+    println!("{:#?}",post);
+    Ok(())
+}
+
+#[allow(unused_must_use)]
+fn char_cn(c: &Context) {
+    let i = c.args[0].to_string();
+    let mut s = String::new();
+    let mut sa = String::new();
+    let mut sb = String::new();
+    let mut sc = String::new();
+    let mut sd = String::new();
+    for ii in i.chars().enumerate() {
+        match ii.0 {
+            0 ..= 450 => {
+                sa.push(ii.1);
+            }
+            451..=950 => {
+                sb.push(ii.1);
+            }
+            951..=1450 => {
+                sc.push(ii.1);
+            }
+            1451..=1950 => {
+                sd.push(ii.1);
+            }
+            _ => {s.push(ii.1)}
+        }
+    }
+    if let Ok(mid) = c.string_flag("mid") {
+        if sa.is_empty() == false {
+            println!("{}",sa);
+            char_mention(mid,sa);
+        }
+    }
+    if let Ok(mid) = c.string_flag("mid") {
+        if sb.is_empty() == false {
+            println!("{}",sb);
+            char_mention(mid,sb);
+        }
+    }
+    if let Ok(mid) = c.string_flag("mid") {
+        if sc.is_empty() == false {
+            println!("{}",sc);
+            char_mention(mid,sc);
+        }
+    }
+    if let Ok(mid) = c.string_flag("mid") {
+        if sd.is_empty() == false {
+            println!("{}",sd);
+            char_mention(mid,sd);
+        }
+    }
+    //char_mention(mid.to_string(),s);
+    //println!("{}",s);
+}
+
+#[allow(unused_must_use)]
+fn char_cl(c: &Context) {
+    let i = c.args[0].to_string();
+    let mut s = String::new();
+    let ll = 450;
+    let mut counter = 1;
+    let max = i.chars().count();
+    let nn = max / ll;
+    loop {
+        if counter == nn {
+            break;
+        }
+        for ii in i.chars().enumerate() {
+            match ii.0 {
+                n if n == max => {
+                    if let Ok(mid) = c.string_flag("mid") {
+                        if s.is_empty() == false {
+                            println!("{}",s);
+                            let t = s.pop();
+                            char_mention(mid,t.expect("REASON").to_string());
+                        }
+                    }
+                }
+                n if n == ll * counter => {
+                    if let Ok(mid) = c.string_flag("mid") {
+                        if s.is_empty() == false {
+                            println!("{}",s);
+                            let t = s.pop();
+                            char_mention(mid,t.expect("REASON").to_string());
+                        }
+                    }
+                    let _s = String::new();
+                }
+                _ => {s.push(ii.1)}
+            }
+        }
+        counter += 1;
+    }
 }
