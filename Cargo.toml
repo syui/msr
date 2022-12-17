@@ -17,6 +17,7 @@ shellexpand = "*"
 curl = "*"
 image = "*"
 os_type = "2.4"
+toml = "*"
 
 misskey = "*"
 anyhow = "1.0"

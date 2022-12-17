@@ -35,7 +35,24 @@ pub struct Datam {
 
 impl Datam {
     pub fn new() -> Result<Self, ConfigError> {
-        let d = shellexpand::tilde("~") + "/.config/msr/config.toml";
+        let d = shellexpand::tilde("~") + "/.config/msr/misskey.toml";
+        let s = Config::builder()
+            .add_source(File::with_name(&d))
+            .add_source(config::Environment::with_prefix("APP"))
+            .build()?;
+        s.try_deserialize()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(unused)]
+pub struct Set {
+    pub mid: String,
+}
+
+impl Set {
+    pub fn new() -> Result<Self, ConfigError> {
+        let d = shellexpand::tilde("~") + "/.config/msr/set.toml";
         let s = Config::builder()
             .add_source(File::with_name(&d))
             .add_source(config::Environment::with_prefix("APP"))

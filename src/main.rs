@@ -7,6 +7,7 @@ use std::path::Path;
 pub mod data;
 use data::Data as Datas;
 use data::Datam as Datams;
+use data::Set as Sets;
 use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
 use seahorse::{App, Command, Context, Flag, FlagType};
 use curl::easy::Easy;
@@ -17,6 +18,14 @@ use futures::stream::TryStreamExt;
 use anyhow::Result;
 use misskey::prelude::*;
 use misskey::{WebSocketClient, HttpClient};
+
+// setting
+use std::io;
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Setting {
+    mid: String,
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -112,6 +121,11 @@ fn main() {
                 Flag::new("text", FlagType::String)
                 .description("post flag(ex: $ msr mm $id -p $text)")
                 .alias("p"),
+                )
+            .flag(
+                Flag::new("set", FlagType::String)
+                .description("mention id set post flag(ex: $ msr mm $text -s $id)")
+                .alias("s"),
                 )
             )
         .command(
@@ -300,11 +314,74 @@ fn p(c: &Context) {
     println!("{:?}", post);
 }
 
+fn msr_set_user(c: &Context) -> io::Result<()> {
+    let path = "/.config/msr/";
+    let file = path.to_string() + &"set.toml";
+    let mut f = shellexpand::tilde("~").to_string();
+    f.push_str(&file);
+    println!("{}", f);
+    let check = Path::new(&f).exists();
+    if check == true {
+        let o = fs::read_to_string(&f)?;
+        println!("read {}", o);           
+    }
+    let mut f = fs::File::create(f)?;
+
+    if let Ok(set) = c.string_flag("set") {
+        if set.is_empty() == false {
+            let set = &*set.to_string();
+            let setting = Setting {
+                mid: set.into(),
+            };
+            let toml = toml::to_string(&setting).unwrap();
+            write!(f, "{}", toml)?;
+            f.flush()?;
+            println!("\n#TOML:\n{}", toml);
+        }
+    }
+    Ok(())
+}
+
+#[allow(unused_must_use)]
 fn mention(c: &Context) {
     let mastodon = token();
     if let Ok(text) = c.string_flag("text") {
         let status = &*text.to_string();
         let mid = Some(c.args[0].to_string());
+        let status_b = StatusBuilder {
+            status: status.to_string(),
+            in_reply_to_id: mid,
+            media_ids: None,
+            sensitive: None,
+            spoiler_text: None,
+            visibility: None,
+        };
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
+    }
+    if let Ok(set) = c.string_flag("set") {
+        let status = c.args[0].to_string();
+        let mid = Some(set);
+        let status_b = StatusBuilder {
+            status: status.to_string(),
+            in_reply_to_id: mid,
+            media_ids: None,
+            sensitive: None,
+            spoiler_text: None,
+            visibility: None,
+        };
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
+        msr_set_user(c);
+    } else {
+        let path = "/.config/msr/";
+        let file = path.to_string() + &"set.toml";
+        let mut f = shellexpand::tilde("~").to_string();
+        f.push_str(&file);
+        println!("{}", f);
+        let data = Sets::new().unwrap();
+        let status = c.args[0].to_string();
+        let mid = Some(data.mid);
         let status_b = StatusBuilder {
             status: status.to_string(),
             in_reply_to_id: mid,
