@@ -343,35 +343,31 @@ fn msr_set_user(c: &Context) -> io::Result<()> {
 }
 
 #[allow(unused_must_use)]
-fn mention(c: &Context) {
+fn mention_post(mid: String, s: String) -> mammut::Result<()> {
     let mastodon = token();
+    let status_b = StatusBuilder {
+        status: s,
+        in_reply_to_id: Some(mid),
+        media_ids: None,
+        sensitive: None,
+        spoiler_text: None,
+        visibility: None,
+    };
+    let post = mastodon.new_status(status_b);
+    println!("{:#?}",post);
+    Ok(())
+}
+
+#[allow(unused_must_use)]
+fn mention(c: &Context) {
     if let Ok(text) = c.string_flag("text") {
         let status = &*text.to_string();
-        let mid = Some(c.args[0].to_string());
-        let status_b = StatusBuilder {
-            status: status.to_string(),
-            in_reply_to_id: mid,
-            media_ids: None,
-            sensitive: None,
-            spoiler_text: None,
-            visibility: None,
-        };
-        let post = mastodon.new_status(status_b);
-        println!("{:?}", post);
+        let mid = c.args[0].to_string();
+        mention_post(mid, status.to_string());
     }
     if let Ok(set) = c.string_flag("set") {
         let status = c.args[0].to_string();
-        let mid = Some(set);
-        let status_b = StatusBuilder {
-            status: status.to_string(),
-            in_reply_to_id: mid,
-            media_ids: None,
-            sensitive: None,
-            spoiler_text: None,
-            visibility: None,
-        };
-        let post = mastodon.new_status(status_b);
-        println!("{:?}", post);
+        mention_post(set, status);
         msr_set_user(c);
     } else {
         let path = "/.config/msr/";
@@ -381,17 +377,7 @@ fn mention(c: &Context) {
         println!("{}", f);
         let data = Sets::new().unwrap();
         let status = c.args[0].to_string();
-        let mid = Some(data.mid);
-        let status_b = StatusBuilder {
-            status: status.to_string(),
-            in_reply_to_id: mid,
-            media_ids: None,
-            sensitive: None,
-            spoiler_text: None,
-            visibility: None,
-        };
-        let post = mastodon.new_status(status_b);
-        println!("{:?}", post);
+        mention_post(data.mid, status);
     }
 }
 
@@ -946,22 +932,6 @@ fn char_c(c: &Context) {
 }
 
 #[allow(unused_must_use)]
-fn char_mention(mid: String, s: String) -> mammut::Result<()> {
-    let mastodon = token();
-    let status_b = StatusBuilder {
-        status: s,
-        in_reply_to_id: Some(mid),
-        media_ids: None,
-        sensitive: None,
-        spoiler_text: None,
-        visibility: None,
-    };
-    let post = mastodon.new_status(status_b);
-    println!("{:#?}",post);
-    Ok(())
-}
-
-#[allow(unused_must_use)]
 fn char_cn(c: &Context) {
     let i = c.args[0].to_string();
     let mut s = String::new();
@@ -989,28 +959,28 @@ fn char_cn(c: &Context) {
     if let Ok(mid) = c.string_flag("mid") {
         if sa.is_empty() == false {
             println!("{}",sa);
-            char_mention(mid,sa);
+            mention_post(mid,sa);
         }
     }
     if let Ok(mid) = c.string_flag("mid") {
         if sb.is_empty() == false {
             println!("{}",sb);
-            char_mention(mid,sb);
+            mention_post(mid,sb);
         }
     }
     if let Ok(mid) = c.string_flag("mid") {
         if sc.is_empty() == false {
             println!("{}",sc);
-            char_mention(mid,sc);
+            mention_post(mid,sc);
         }
     }
     if let Ok(mid) = c.string_flag("mid") {
         if sd.is_empty() == false {
             println!("{}",sd);
-            char_mention(mid,sd);
+            mention_post(mid,sd);
         }
     }
-    //char_mention(mid.to_string(),s);
+    //mention_post(mid.to_string(),s);
     //println!("{}",s);
 }
 
@@ -1033,7 +1003,7 @@ fn char_cl(c: &Context) {
                         if s.is_empty() == false {
                             println!("{}",s);
                             let t = s.pop();
-                            char_mention(mid,t.expect("REASON").to_string());
+                            mention_post(mid,t.expect("REASON").to_string());
                         }
                     }
                 }
@@ -1042,7 +1012,7 @@ fn char_cl(c: &Context) {
                         if s.is_empty() == false {
                             println!("{}",s);
                             let t = s.pop();
-                            char_mention(mid,t.expect("REASON").to_string());
+                            mention_post(mid,t.expect("REASON").to_string());
                         }
                     }
                     let _s = String::new();
