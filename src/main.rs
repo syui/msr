@@ -299,7 +299,19 @@ fn token() -> Mastodon {
     return t;
 }
 
-fn deepl(message: String,lang: String) {
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type")]
+struct DeepData {
+    translations: Vec<Translation>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Translation {
+    text: String,
+    detected_source_language : String,
+}
+
+fn deepl(message: String,lang: String) -> Result<()> {
     use std::process::Command;
     let data = Deeps::new().unwrap();
     let data = Deeps {
@@ -316,30 +328,25 @@ fn deepl(message: String,lang: String) {
 
     let o = String::from_utf8_lossy(&output.stdout);
     let o =  o.to_string();
-    let l = shellexpand::tilde("~") + "/.config/msr/deepl.json";
-    let l = l.to_string();
-    let mut l = fs::File::create(l).unwrap();
-    if o != "" {
-        l.write_all(&o.as_bytes()).unwrap();
-    }
+    let p: DeepData = serde_json::from_str(&o)?;
+    let o = &p.translations[0].text;
 
-    let l = shellexpand::tilde("~") + "/.config/msr/deepl.json";
-    let l = l.to_string();
-    let output = Command::new("jq").arg("-r")
-        .arg(".translations|.[]|.text")
-        .arg(l)
-        .output().expect("jq");
-
-    let o = String::from_utf8_lossy(&output.stdout);
-    let o =  o.to_string();
-    //let j = serde_json::to_string(&o).unwrap();
-    //println!("{} {}", o,j);
+    //let l = shellexpand::tilde("~") + "/.config/msr/deepl.json";
+    //let l = l.to_string();
+    //let output = Command::new("jq").arg("-r")
+    //    .arg(".translations|.[]|.text")
+    //    .arg(l)
+    //    .output().expect("jq");
+    //let o = String::from_utf8_lossy(&output.stdout);
+    //let o =  o.to_string();
+    
     let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
     let l = l.to_string();
     let mut l = fs::File::create(l).unwrap();
     if o != "" {
         l.write_all(&o.as_bytes()).unwrap();
     }
+    Ok(())
 }
 
 fn timeline() -> mammut::Result<()> {
@@ -367,6 +374,7 @@ fn t(_c: &Context) {
     timeline().unwrap();
 }
 
+#[allow(unused_must_use)]
 fn p(c: &Context) {
     let mastodon = token();
     let message = c.args[0].to_string();
@@ -386,6 +394,7 @@ fn p(c: &Context) {
     }
 }
 
+#[allow(unused_must_use)]
 fn tt(c: &Context) {
     let m = c.args[0].to_string();
     let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
@@ -397,7 +406,7 @@ fn tt(c: &Context) {
         deepl(m,lang.to_string());
     }
     let o = fs::read_to_string(&l).expect("could not read file");
-    println!("{:?}", o);
+    println!("{}", o);
 }
 
 fn msr_set_user(c: &Context) -> io::Result<()> {
