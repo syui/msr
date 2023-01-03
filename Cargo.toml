@@ -1,27 +1,18 @@
 [package]
-name = "msr"
-description = "mastodon client in rust, and misskey client"
-version = "0.1.0"
+name = "trans-rs"
+description = "deep l api client"
+version = "0.0.1"
 authors = ["syui <syui@syui.cf>"]
 edition = "2021"
 
 [dependencies]
 seahorse = "*"
 dotenv = "0.15"
-mammut = "0.13.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 serde = "*"
 config = { git = "https://github.com/mehcode/config-rs", branch = "master" }
 shellexpand = "*"
-curl = "*"
-image = "*"
-os_type = "2.4"
 toml = "*"
-
-misskey = "*"
-anyhow = "1.0"
-tokio = { version = "1.22.0", features = ["full"] }
-structopt = "0.3.16"
-futures = "0.3.5"
-url = { version = "2.0", features = ["serde"] }
+reqwest = "*"
+tokio = { version = "1", features = ["full"] }

@@ -4,4 +4,4 @@ target
 config.toml
 *.txt
 *.png
-deepl.toml
+deepl.toml*
