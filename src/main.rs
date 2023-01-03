@@ -8,6 +8,7 @@ pub mod data;
 use data::Data as Datas;
 use data::Datam as Datams;
 use data::Set as Sets;
+use data::Deep as Deeps;
 use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
 use seahorse::{App, Command, Context, Flag, FlagType};
 use curl::easy::Easy;
@@ -66,7 +67,12 @@ fn main() {
             .usage("msr p {}")
             .description("post message, ex: $ msr -p $text")
             .alias("p")
-            .action(p),
+            .action(p)
+            .flag(
+                Flag::new("lang", FlagType::String)
+                .description("Lang flag")
+                .alias("l"),
+                )
             )
         .command(
             Command::new("timeline")
@@ -281,6 +287,49 @@ fn token() -> Mastodon {
     return t;
 }
 
+fn deepl(message: String,lang: String) {
+    use std::process::Command;
+    let data = Deeps::new().unwrap();
+    let data = Deeps {
+        api: data.api,
+    };
+    let api = "Authorization: DeepL-Auth-Key ".to_owned() + &data.api;
+    let txt = "text=".to_owned() + &message.to_string();
+    let lang = "target_lang=".to_owned() + &lang;
+    let output = Command::new("curl").arg("-X").arg("POST").arg("https://api-free.deepl.com/v2/translate")
+        .arg("-H").arg(api)
+        .arg("-d").arg(txt)
+        .arg("-d").arg(lang)
+        .output().expect("curl");
+
+    let o = String::from_utf8_lossy(&output.stdout);
+    let o =  o.to_string();
+    let l = shellexpand::tilde("~") + "/.config/msr/deepl.json";
+    let l = l.to_string();
+    let mut l = fs::File::create(l).unwrap();
+    if o != "" {
+        l.write_all(&o.as_bytes()).unwrap();
+    }
+
+    let l = shellexpand::tilde("~") + "/.config/msr/deepl.json";
+    let l = l.to_string();
+    let output = Command::new("jq").arg("-r")
+        .arg(".translations|.[]|.text")
+        .arg(l)
+        .output().expect("jq");
+
+    let o = String::from_utf8_lossy(&output.stdout);
+    let o =  o.to_string();
+    //let j = serde_json::to_string(&o).unwrap();
+    //println!("{} {}", o,j);
+    let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
+    let l = l.to_string();
+    let mut l = fs::File::create(l).unwrap();
+    if o != "" {
+        l.write_all(&o.as_bytes()).unwrap();
+    }
+}
+
 fn timeline() -> mammut::Result<()> {
     let mastodon = token();
     let tmp = &mastodon.get_home_timeline()?.initial_items;
@@ -309,9 +358,20 @@ fn t(_c: &Context) {
 fn p(c: &Context) {
     let mastodon = token();
     let message = c.args[0].to_string();
-    let status_b = StatusBuilder::new(format!("{}", message));
-    let post = mastodon.new_status(status_b);
-    println!("{:?}", post);
+    let m = c.args[0].to_string();
+    if let Ok(lang) = c.string_flag("lang") {
+        deepl(m,lang.to_string());
+        let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
+        let l = l.to_string();
+        let o = fs::read_to_string(&l).expect("could not read file");
+        let status_b = StatusBuilder::new(format!("{}", o.to_string()));
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
+    } else {
+        let status_b = StatusBuilder::new(format!("{}", message));
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
+    }
 }
 
 fn msr_set_user(c: &Context) -> io::Result<()> {
@@ -1023,3 +1083,4 @@ fn char_cl(c: &Context) {
         counter += 1;
     }
 }
+
