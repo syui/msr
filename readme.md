@@ -35,6 +35,17 @@ $ msr s
 # post
 $ msr p "test post"
 
+# post translate
+## en -> ja
+$ msr p "test" -l en
+## ja -> en
+$ msr p "テスト" -l ja
+
+# translation
+$ msr tt "test" -l ja
+$ msr tt "テスト" -l en
+$ msr tt "test"
+
 # mention
 $ msr mm $id -p "$message"
 $ id=`msr nl -o id|head -n 1|cut -d '"' -f 2`

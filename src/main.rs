@@ -8,6 +8,7 @@ pub mod data;
 use data::Data as Datas;
 use data::Datam as Datams;
 use data::Set as Sets;
+use data::Deep as Deeps;
 use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
 use seahorse::{App, Command, Context, Flag, FlagType};
 use curl::easy::Easy;
@@ -21,6 +22,11 @@ use misskey::{WebSocketClient, HttpClient};
 
 // setting
 use std::io;
+
+// reqwest + features
+use reqwest::header::AUTHORIZATION;
+use reqwest::header::CONTENT_TYPE;
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Setting {
@@ -64,9 +70,26 @@ fn main() {
         .command(
             Command::new("post")
             .usage("msr p {}")
-            .description("post message, ex: $ msr -p $text")
+            .description("post message, ex: $ msr p $text")
             .alias("p")
-            .action(p),
+            .action(p)
+            .flag(
+                Flag::new("lang", FlagType::String)
+                .description("Lang flag")
+                .alias("l"),
+                )
+            )
+        .command(
+            Command::new("translate")
+            .usage("msr tt {}")
+            .description("translate message, ex: $ msr tt $text -l en")
+            .alias("tt")
+            .action(tt)
+            .flag(
+                Flag::new("lang", FlagType::String)
+                .description("Lang flag")
+                .alias("l"),
+                )
             )
         .command(
             Command::new("timeline")
@@ -281,6 +304,51 @@ fn token() -> Mastodon {
     return t;
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type")]
+struct DeepData {
+    translations: Vec<Translation>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Translation {
+    text: String,
+    detected_source_language : String,
+}
+
+#[tokio::main]
+async fn deepl(message: String,lang: String) -> Result<()> {
+    let data = Deeps::new().unwrap();
+    let data = Deeps {
+        api: data.api,
+    };
+
+    let api = "DeepL-Auth-Key ".to_owned() + &data.api;
+    let mut params = HashMap::new();
+    params.insert("text", &message);
+    params.insert("target_lang", &lang);
+    let client = reqwest::Client::new();
+    let res = client
+        .post("https://api-free.deepl.com/v2/translate")
+        .header(AUTHORIZATION, api)
+        .header(CONTENT_TYPE, "json")
+        .form(&params)
+        .send()
+        .await?
+        .text()
+        .await?;
+    let p: DeepData = serde_json::from_str(&res).unwrap();
+    let o = &p.translations[0].text;
+    
+    let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
+    let l = l.to_string();
+    let mut l = fs::File::create(l).unwrap();
+    if o != "" {
+        l.write_all(&o.as_bytes()).unwrap();
+    }
+    Ok(())
+}
+
 fn timeline() -> mammut::Result<()> {
     let mastodon = token();
     let tmp = &mastodon.get_home_timeline()?.initial_items;
@@ -306,12 +374,39 @@ fn t(_c: &Context) {
     timeline().unwrap();
 }
 
+#[allow(unused_must_use)]
 fn p(c: &Context) {
     let mastodon = token();
     let message = c.args[0].to_string();
-    let status_b = StatusBuilder::new(format!("{}", message));
-    let post = mastodon.new_status(status_b);
-    println!("{:?}", post);
+    let m = c.args[0].to_string();
+    if let Ok(lang) = c.string_flag("lang") {
+        deepl(m,lang.to_string());
+        let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
+        let l = l.to_string();
+        let o = fs::read_to_string(&l).expect("could not read file");
+        let status_b = StatusBuilder::new(format!("{}", o.to_string()));
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
+    } else {
+        let status_b = StatusBuilder::new(format!("{}", message));
+        let post = mastodon.new_status(status_b);
+        println!("{:?}", post);
+    }
+}
+
+#[allow(unused_must_use)]
+fn tt(c: &Context) {
+    let m = c.args[0].to_string();
+    let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
+    let l = l.to_string();
+    if let Ok(lang) = c.string_flag("lang") {
+        deepl(m,lang.to_string());
+    } else {
+        let lang = "ja";
+        deepl(m,lang.to_string());
+    }
+    let o = fs::read_to_string(&l).expect("could not read file");
+    println!("{}", o);
 }
 
 fn msr_set_user(c: &Context) -> io::Result<()> {
@@ -1023,3 +1118,4 @@ fn char_cl(c: &Context) {
         counter += 1;
     }
 }
+
