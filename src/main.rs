@@ -65,9 +65,21 @@ fn main() {
         .command(
             Command::new("post")
             .usage("msr p {}")
-            .description("post message, ex: $ msr -p $text")
+            .description("post message, ex: $ msr p $text")
             .alias("p")
             .action(p)
+            .flag(
+                Flag::new("lang", FlagType::String)
+                .description("Lang flag")
+                .alias("l"),
+                )
+            )
+        .command(
+            Command::new("translate")
+            .usage("msr tt {}")
+            .description("translate message, ex: $ msr tt $text -l en")
+            .alias("tt")
+            .action(tt)
             .flag(
                 Flag::new("lang", FlagType::String)
                 .description("Lang flag")
@@ -372,6 +384,20 @@ fn p(c: &Context) {
         let post = mastodon.new_status(status_b);
         println!("{:?}", post);
     }
+}
+
+fn tt(c: &Context) {
+    let m = c.args[0].to_string();
+    let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
+    let l = l.to_string();
+    if let Ok(lang) = c.string_flag("lang") {
+        deepl(m,lang.to_string());
+    } else {
+        let lang = "ja";
+        deepl(m,lang.to_string());
+    }
+    let o = fs::read_to_string(&l).expect("could not read file");
+    println!("{:?}", o);
 }
 
 fn msr_set_user(c: &Context) -> io::Result<()> {
