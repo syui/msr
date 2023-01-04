@@ -1,10 +1,11 @@
+pub mod data;
 use std::env;
 use std::borrow::Cow;
 use std::fs;
+use std::io;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-pub mod data;
 use data::Data as Datas;
 use data::Datam as Datams;
 use data::Set as Sets;
@@ -13,17 +14,12 @@ use mammut::{Data, Mastodon, StatusBuilder, MediaBuilder};
 use seahorse::{App, Command, Context, Flag, FlagType};
 use curl::easy::Easy;
 use serde::{Deserialize, Serialize};
-
 // misskey
 use futures::stream::TryStreamExt;
 use anyhow::Result;
 use misskey::prelude::*;
 use misskey::{WebSocketClient, HttpClient};
-
-// setting
-use std::io;
-
-// reqwest + features
+// reqwest
 use reqwest::header::AUTHORIZATION;
 use reqwest::header::CONTENT_TYPE;
 use std::collections::HashMap;
@@ -89,6 +85,11 @@ fn main() {
                 Flag::new("lang", FlagType::String)
                 .description("Lang flag")
                 .alias("l"),
+                )
+            .flag(
+                Flag::new("api", FlagType::String)
+                .description("set api deepl")
+                .alias("a"),
                 )
             )
         .command(
@@ -339,13 +340,7 @@ async fn deepl(message: String,lang: String) -> Result<()> {
         .await?;
     let p: DeepData = serde_json::from_str(&res).unwrap();
     let o = &p.translations[0].text;
-    
-    let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
-    let l = l.to_string();
-    let mut l = fs::File::create(l).unwrap();
-    if o != "" {
-        l.write_all(&o.as_bytes()).unwrap();
-    }
+    println!("{}", o);
     Ok(())
 }
 
@@ -396,17 +391,24 @@ fn p(c: &Context) {
 
 #[allow(unused_must_use)]
 fn tt(c: &Context) {
+    if let Ok(api) = c.string_flag("api") {
+        let o = "api='".to_owned() + &api.to_string() + &"'".to_owned();
+        let o = o.to_string();
+        let l = shellexpand::tilde("~") + "/.config/msr/deepl.toml";
+        let l = l.to_string();
+        let mut l = fs::File::create(l).unwrap();
+        if o != "" {
+            l.write_all(&o.as_bytes()).unwrap();
+        }
+        println!("{:#?}", l);
+    }
     let m = c.args[0].to_string();
-    let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
-    let l = l.to_string();
     if let Ok(lang) = c.string_flag("lang") {
         deepl(m,lang.to_string());
     } else {
         let lang = "ja";
         deepl(m,lang.to_string());
     }
-    let o = fs::read_to_string(&l).expect("could not read file");
-    println!("{}", o);
 }
 
 fn msr_set_user(c: &Context) -> io::Result<()> {

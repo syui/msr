@@ -35,16 +35,19 @@ $ msr s
 # post
 $ msr p "test post"
 
+# translation(deepl api)
+$ export api="xxx"
+$ msr tt "test" -a $api
+
+$ msr tt "test" -l ja
+$ msr tt "テスト" -l en
+$ msr tt "test"
+
 # post translate
 ## en -> ja
 $ msr p "test" -l en
 ## ja -> en
 $ msr p "テスト" -l ja
-
-# translation
-$ msr tt "test" -l ja
-$ msr tt "テスト" -l en
-$ msr tt "test"
 
 # mention
 $ msr mm $id -p "$message"
