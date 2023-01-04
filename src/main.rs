@@ -340,6 +340,12 @@ async fn deepl(message: String,lang: String) -> Result<()> {
         .await?;
     let p: DeepData = serde_json::from_str(&res).unwrap();
     let o = &p.translations[0].text;
+    let l = shellexpand::tilde("~") + "/.config/msr/deepl.txt";
+    let l = l.to_string();
+    let mut l = fs::File::create(l).unwrap();
+    if o != "" {
+        l.write_all(&o.as_bytes()).unwrap();
+    }
     println!("{}", o);
     Ok(())
 }
