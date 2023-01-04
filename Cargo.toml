@@ -1,7 +1,7 @@
 [package]
 name = "msr"
 description = "mastodon client in rust, and misskey client"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["syui <syui@syui.cf>"]
 edition = "2021"
 
