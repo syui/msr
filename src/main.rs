@@ -157,7 +157,12 @@ fn main() {
             .usage("msr d")
             .description("delete latest post")
             .alias("d")
-            .action(d),
+            .action(d)
+            .flag(
+                Flag::new("id", FlagType::String)
+                .description("Delete id flag")
+                .alias("id"),
+                )
             )
         .command(
             Command::new("icon")
@@ -485,19 +490,23 @@ fn mention(c: &Context) {
 }
 
 #[allow(unused_must_use)]
-fn delete() -> mammut::Result<()> {
+fn delete(c: &Context) -> mammut::Result<()> {
     let mastodon = token();
-    let n = &mastodon.get_home_timeline()?.initial_items[0];
-    let user = &n.account.username;
-    let body = &n.content;
-    let id = &n.id;
-    println!("delete -> {} {:?}", user, body);
-    mastodon.delete_status(id);
+    if let Ok(id) = c.string_flag("id") {
+        mastodon.delete_status(&id);
+    } else {
+        let n = &mastodon.get_home_timeline()?.initial_items[0];
+        let user = &n.account.username;
+        let body = &n.content;
+        let id = &n.id;
+        println!("delete -> {} {:?}", user, body);
+        mastodon.delete_status(id);
+    }
     Ok(())
 }
 
-fn d(_c: &Context) {
-    delete().unwrap();
+fn d(c: &Context) {
+    delete(c).unwrap();
 }
 
 fn c_media_upload() -> Command {
