@@ -161,7 +161,7 @@ fn main() {
             .flag(
                 Flag::new("id", FlagType::String)
                 .description("Delete id flag")
-                .alias("id"),
+                .alias("i"),
                 )
             )
         .command(
