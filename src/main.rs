@@ -182,6 +182,16 @@ fn main() {
                 .description("Delete flag")
                 .alias("d"),
                 )
+            .flag(
+                Flag::new("list", FlagType::Bool)
+                .description("followers list flag")
+                .alias("l"),
+                )
+            .flag(
+                Flag::new("ll", FlagType::Bool)
+                .description("user followers list flag, $ msr f @syui@syui.cf -ll")
+                .alias("ll"),
+                )
             )
         .command(
             Command::new("reblog")
@@ -877,17 +887,37 @@ fn icon_t(_c: &Context) {
 #[allow(unused_must_use)]
 fn follow(c: &Context) -> mammut::Result<()> {
     let mastodon = token();
-    let id = c.args[0].to_string();
-    if c.bool_flag("delete") {
-        println!("{:#?}", "unfollow");
-        mastodon.unfollow(&id);
+    if c.bool_flag("list") {
+        let status = mastodon.verify_credentials().unwrap();
+        let id = status.id;
+        let status = mastodon.followers(&id)?.initial_items;
+        let length = &status.len();
+        for n in 0..*length {
+            let nn = &status[n];
+            let acct = &nn.acct;
+            println!("{}", acct);
+        }
     } else {
+        let id = c.args[0].to_string();
         let status = mastodon.search_accounts(&id, None, false)?.initial_items;
         let nn = &status[0];
         let acct = &nn.acct;
         let id = &nn.id;
-        mastodon.follow(&id);
-        println!("follow : {:?} {:?}", id, acct);
+        if c.bool_flag("delete") {
+            println!("{:#?}", "unfollow");
+            mastodon.unfollow(&id);
+        } else if c.bool_flag("ll") {
+            let status = mastodon.followers(&id)?.initial_items;
+            let length = &status.len();
+            for n in 0..*length {
+                let nn = &status[n];
+                let acct = &nn.acct;
+                println!("{}", acct);
+            }
+        } else {
+            mastodon.follow(&id);
+            println!("follow : {:?} {:?}", id, acct);
+        }
     }
     Ok(())
 }

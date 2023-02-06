@@ -71,6 +71,10 @@ $ msr n -c
 $ msr f @user@example.com
 $ msr f @user@example.com -d
 
+# followers
+$ msr f -l
+$ msr f @user@example.com -ll
+
 # search user
 $ msr s -u @ai
 $ msr s -i @ai
