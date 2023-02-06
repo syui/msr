@@ -174,7 +174,7 @@ fn main() {
         .command(
             Command::new("follow")
             .usage("msr f {}")
-            .description("follow, ex: $ msr f $id")
+            .description("follow, ex: $ msr f @ai@syui.cf")
             .alias("f")
             .action(f)
             .flag(
@@ -877,16 +877,17 @@ fn icon_t(_c: &Context) {
 #[allow(unused_must_use)]
 fn follow(c: &Context) -> mammut::Result<()> {
     let mastodon = token();
-    let uri = Cow::Owned(String::from(c.args[0].to_string()));
-    println!("{:#?}", uri);
     let id = c.args[0].to_string();
     if c.bool_flag("delete") {
         println!("{:#?}", "unfollow");
         mastodon.unfollow(&id);
     } else {
-        println!("{:#?}", "follow");
-        mastodon.follows(uri);
+        let status = mastodon.search_accounts(&id, None, false)?.initial_items;
+        let nn = &status[0];
+        let acct = &nn.acct;
+        let id = &nn.id;
         mastodon.follow(&id);
+        println!("follow : {:?} {:?}", id, acct);
     }
     Ok(())
 }

@@ -68,8 +68,8 @@ $ msr nl -o id
 $ msr n -c
 
 # follow, unfollow
-$ msr f $id
-$ msr f $id -d
+$ msr f @user@example.com
+$ msr f @user@example.com -d
 
 # search user
 $ msr s -u @ai
