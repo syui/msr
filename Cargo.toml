@@ -1,6 +1,6 @@
 [package]
-name = "trans-rs"
-description = "deep l api client"
+name = "chatgpt-rs"
+description = "openai api client"
 version = "0.0.1"
 authors = ["syui <syui@syui.cf>"]
 edition = "2021"
@@ -14,5 +14,8 @@ serde = "*"
 config = { git = "https://github.com/mehcode/config-rs", branch = "master" }
 shellexpand = "*"
 toml = "*"
-reqwest = "*"
 tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
+structopt = "0.3.16"
+futures = "0.3.5"
+reqwest = { version = "*", features = ["json"] }

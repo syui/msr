@@ -2,23 +2,20 @@ pub mod data;
 use std::env;
 use std::fs;
 use std::io::prelude::*;
-use data::Deep as Deeps;
+use data::Open as Opens;
 use seahorse::{App, Command, Context, Flag, FlagType};
 use serde::{Deserialize, Serialize};
-use reqwest::header::AUTHORIZATION;
-use reqwest::header::CONTENT_TYPE;
-use std::collections::HashMap;
+use serde_json::json;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
-struct DeepData {
-    translations: Vec<Translation>,
+struct OpenData {
+    choices: Vec<Choices>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Translation {
+struct Choices {
     text: String,
-    detected_source_language : String,
 }
 
 fn main() {
@@ -27,74 +24,87 @@ fn main() {
         .author(env!("CARGO_PKG_AUTHORS"))
         .description(env!("CARGO_PKG_DESCRIPTION"))
         .version(env!("CARGO_PKG_VERSION"))
-        .usage("trans-rs [option] [x]")
+        .usage("chatgpt-rs [option] [x]")
         .command(
-            Command::new("translate")
-            .usage("trans-rs tt {}")
-            .description("translate message, ex: $ trans-rs tt $text -l en")
+            Command::new("chatgpt")
+            .usage("chatgpt tt {}")
+            .description("chatgpt message, ex: $ chatgpt-rs tt $text -l en")
             .alias("tt")
-            .action(tt)
+            .action(openai_post)
             .flag(
-                Flag::new("lang", FlagType::String)
-                .description("Lang flag")
-                .alias("l"),
+                Flag::new("model", FlagType::String)
+                .description("model flag")
+                .alias("m"),
                 )
             )
         .command(
             Command::new("api")
-            .usage("trans-rs a {}")
+            .usage("chatgpt-rs a {}")
             .description("api change, ex : $ msr a $api")
             .alias("a")
-            .action(a),
+            .action(openai_api),
             )
         ;
     app.run(args);
 }
 
 #[tokio::main]
-async fn deepl(message: String,lang: String) -> reqwest::Result<()> {
-    let data = Deeps::new().unwrap();
-    let data = Deeps {
+async fn openai(prompt: String, model: String) -> reqwest::Result<()> {
+    let data = Opens::new().unwrap();
+    let data = Opens {
         api: data.api,
     };
-    let api = "DeepL-Auth-Key ".to_owned() + &data.api;
-    let mut params = HashMap::new();
-    params.insert("text", &message);
-    params.insert("target_lang", &lang);
+    let temperature = 0.7;
+    let max_tokens = 250;
+    let top_p = 1;
+    let frequency_penalty = 0;
+    let presence_penalty = 0;
+    let stop = "[\"###\"]";
+
+    let post = Some(json!({
+        "prompt": &prompt.to_string(),
+        "model": &model.to_string(),
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "top_p": top_p,
+        "frequency_penalty": frequency_penalty,
+        "presence_penalty": presence_penalty,
+        "stop": stop,
+    }));
+        
     let client = reqwest::Client::new();
     let res = client
-        .post("https://api-free.deepl.com/v2/translate")
-        .header(AUTHORIZATION, api)
-        .header(CONTENT_TYPE, "json")
-        .form(&params)
+        .post("https://api.openai.com/v1/completions")
+        .header("Authorization", "Bearer ".to_owned() + &data.api)
+        .json(&post)
         .send()
         .await?
         .text()
         .await?;
-    let p: DeepData = serde_json::from_str(&res).unwrap();
-    let o = &p.translations[0].text;
-    //println!("{}", res);
+    let p: OpenData = serde_json::from_str(&res).unwrap();
+    let o = &p.choices[0].text;
+    let o: String = o.chars().filter(|c| !c.is_whitespace()).collect();
     println!("{}", o);
     Ok(())
 }
 
 #[allow(unused_must_use)]
-fn tt(c: &Context) {
+fn openai_post(c: &Context) {
     let m = c.args[0].to_string();
-    if let Ok(lang) = c.string_flag("lang") {
-        deepl(m,lang.to_string());
+    if let Ok(model) = c.string_flag("model") {
+        openai(m,model.to_string());
     } else {
-        let lang = "ja";
-        deepl(m,lang.to_string());
+        let model = "text-davinci-003";
+        openai(m,model.to_string());
     }
 }
 
 #[allow(unused_must_use)]
-fn a(c: &Context) {
+fn openai_api(c: &Context) {
     let api = c.args[0].to_string();
     let o = "api='".to_owned() + &api.to_string() + &"'".to_owned();
     let o = o.to_string();
-    let l = shellexpand::tilde("~") + "/.config/msr/deepl.toml";
+    let l = shellexpand::tilde("~") + "/.config/msr/openai.toml";
     let l = l.to_string();
     let mut l = fs::File::create(l).unwrap();
     if o != "" {
@@ -102,3 +112,4 @@ fn a(c: &Context) {
     }
     println!("{:#?}", l);
 }
+
