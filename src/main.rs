@@ -112,6 +112,12 @@ fn main() {
                 )
             )
         .command(
+            Command::new("bot")
+            .usage("msr bot")
+            .description("bot, ex: $ msr n --clear")
+            .action(bot)
+            )
+        .command(
             Command::new("notifylatest")
             .usage("msr nl")
             .description("notification-latest, ex: $msr nl -o id")
@@ -674,6 +680,45 @@ fn notifylatest(c: &Context) -> mammut::Result<()> {
 
 fn nl(c: &Context) {
     notifylatest(c).unwrap();
+}
+
+fn bot_run(_c: &Context) -> mammut::Result<()> {
+    let mastodon = token();
+    let nn = &mastodon.notifications()?.initial_items;
+    if nn.len() == 0 {
+        println!("{:#?}", nn);
+        return Ok(());
+    }
+    let length = &nn.len();
+    for n in 0..*length {
+        let tmp = &nn[n];
+        let date = &tmp.created_at;
+        let ntype = &tmp.notification_type;
+        let user = &tmp.account.username;
+        let id = &tmp.id;
+        let url = &tmp.account.url;
+        let b = &tmp.status;
+        if b.is_none() {
+            continue;
+        }
+        let body = &b.as_ref().unwrap().content;
+        let mid = &b.as_ref().unwrap().id;
+        let address = Address {
+            user : user.to_owned(),
+            id : id.to_owned(),
+            mid : mid.to_owned(),
+            url : url.to_owned(),
+            date : date.to_owned().to_string(),
+            body : body.to_owned(),
+        };
+        let j = serde_json::to_string(&address)?;
+        println!("{}", j);
+    }
+    Ok(())
+}
+
+fn bot(c: &Context) {
+    bot_run(c).unwrap();
 }
 
 fn notifysecond(c: &Context) -> mammut::Result<()> {
